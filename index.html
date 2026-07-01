@@ -207,6 +207,60 @@ textarea{resize:vertical;min-height:60px}
 }
 .hamburger{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 9px;cursor:pointer;color:var(--text);font-size:16px}
 @media(max-width:900px){.hamburger{display:block}}
+
+/* Period selector */
+.period-tabs{display:flex;gap:3px;background:var(--surface2);border-radius:var(--radius-sm);padding:3px;border:1px solid var(--border)}
+.period-tab{padding:5px 11px;border-radius:6px;background:none;border:none;cursor:pointer;font-size:11px;font-weight:600;color:var(--text3);font-family:inherit;transition:all .15s}
+.period-tab.active{background:var(--surface3);color:var(--accent)}
+/* Dashboard filter bar */
+.dash-filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px}
+.dash-filter-label{font-size:11px;color:var(--text3);font-weight:500;white-space:nowrap}
+/* Split income cards */
+.income-split-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.income-split-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.isc-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:4px}
+.isc-name{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:3px}
+.isc-amount{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--green)}
+.isc-sub{font-size:10px;color:var(--text3);margin-top:3px}
+/* Split amount cols */
+.td-income{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--green);text-align:right}
+.td-expense{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--red);text-align:right}
+.td-debt{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--yellow);text-align:right}
+.td-empty{font-family:'Space Mono',monospace;font-size:11px;color:var(--text3);text-align:right}
+th.right{text-align:right}
+td.right{text-align:right}
+/* Annual table */
+.annual-table{width:100%;border-collapse:collapse;font-size:11px}
+.annual-table th{text-align:center;padding:7px 5px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);background:var(--surface2);font-weight:500}
+.annual-table th.label-col{text-align:left;min-width:110px}
+.annual-table td{padding:6px 5px;border-top:1px solid var(--border);text-align:right;font-family:'Space Mono',monospace;font-size:10px;color:var(--text2)}
+.annual-table td.label-col{text-align:left;font-family:'Noto Sans Thai',sans-serif;font-size:11px;color:var(--text)}
+.annual-table tr:hover td{background:var(--surface2)}
+.annual-table .total-row td{font-weight:700;color:var(--accent);border-top:2px solid var(--border)}
+/* Recurring */
+.recurring-item{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px}
+.recurring-info{flex:1;min-width:0}
+.recurring-name{font-size:13px;font-weight:500}
+.recurring-meta{font-size:10px;color:var(--text3);margin-top:2px}
+.due-badge{font-family:'Space Mono',monospace;font-size:10px;background:var(--surface3);border:1px solid var(--border);padding:2px 7px;border-radius:100px;color:var(--text2);white-space:nowrap}
+.due-badge.soon{border-color:var(--yellow);color:var(--yellow);background:var(--yellow-dim)}
+/* Credit card */
+.cc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.cc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+.cc-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.cc-name{font-size:14px;font-weight:700}
+.cc-bank{font-size:11px;color:var(--text3)}
+.cc-table-wrap{overflow-x:auto}
+.cc-table{width:100%;border-collapse:collapse;font-size:11px}
+.cc-table th{text-align:right;padding:7px 9px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);background:var(--surface2);white-space:nowrap}
+.cc-table th.left{text-align:left}
+.cc-table td{padding:7px 9px;border-top:1px solid var(--border);text-align:right;font-family:'Space Mono',monospace;font-size:11px}
+.cc-table td.left{text-align:left;font-family:'Noto Sans Thai',sans-serif;font-size:12px}
+.cc-table .highlight{color:var(--red);font-weight:700}
+.cc-table tr:hover td{background:var(--surface2)}
+.cc-total-row td{font-weight:700;border-top:2px solid var(--border)}
+@media(max-width:900px){.income-split-grid{grid-template-columns:1fr}.cc-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -249,13 +303,14 @@ textarea{resize:vertical;min-height:60px}
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="logo-mark">Home Finance</div>
-    <div class="logo-title">บ้านเรา 🏠<span class="gs-status-dot" id="gsDot" title="เชื่อมต่อ Google Sheets"></span></div>
+    <div class="logo-title">บ้านเรา 🏠<span class="gs-status-dot" id="gsDot"></span></div>
   </div>
   <div class="nav-section">
     <div class="nav-label">เมนู</div>
     <button class="nav-btn active" onclick="showPage('dashboard')"><span>📊</span> Dashboard</button>
     <button class="nav-btn" onclick="showPage('transactions')"><span>📋</span> รายการทั้งหมด</button>
     <button class="nav-btn" onclick="showPage('members')"><span>👥</span> สมาชิก</button>
+    <button class="nav-btn" onclick="showPage('creditcard')"><span>💳</span> บัตรเครดิต</button>
     <button class="nav-btn" onclick="showPage('settings')"><span>⚙️</span> ตั้งค่า</button>
   </div>
   <div class="sidebar-members" id="sidebarMembers"></div>
@@ -266,14 +321,17 @@ textarea{resize:vertical;min-height:60px}
   <div class="topbar">
     <div class="topbar-left">
       <button class="hamburger" onclick="toggleSidebar()">☰</button>
-      <div>
-        <div class="topbar-title" id="pageTitle">Dashboard</div>
-        <div class="topbar-sub" id="pageSubtitle">ภาพรวมการเงินประจำเดือน</div>
-      </div>
+      <div><div class="topbar-title" id="pageTitle">Dashboard</div><div class="topbar-sub" id="pageSubtitle">ภาพรวมการเงิน</div></div>
     </div>
     <div class="topbar-right">
       <div id="syncBadge" class="sync-badge ok">✓ Synced</div>
-      <div class="month-nav">
+      <div class="period-tabs" id="periodTabs">
+        <button class="period-tab" onclick="setPeriod('day')">รายวัน</button>
+        <button class="period-tab" onclick="setPeriod('week')">รายสัปดาห์</button>
+        <button class="period-tab active" onclick="setPeriod('month')">รายเดือน</button>
+        <button class="period-tab" onclick="setPeriod('year')">รายปี</button>
+      </div>
+      <div class="month-nav" id="monthNavBar">
         <button onclick="changeMonth(-1)">‹</button>
         <div class="month-display" id="monthDisplay"></div>
         <button onclick="changeMonth(1)">›</button>
@@ -284,12 +342,21 @@ textarea{resize:vertical;min-height:60px}
 
   <!-- Dashboard -->
   <div class="page active" id="page-dashboard">
+    <div class="dash-filter-bar">
+      <span class="dash-filter-label">แสดง:</span>
+      <select class="filter-select" id="dashMemberFilter" onchange="renderDashboard()"><option value="">ทุกสมาชิก</option></select>
+      <select class="filter-select" id="dashTypeFilter" onchange="renderDashboard()">
+        <option value="">ทุกประเภท</option><option value="income">รายรับ</option>
+        <option value="expense">รายจ่าย</option><option value="debt">หนี้สิน</option>
+      </select>
+    </div>
     <div class="summary-grid" id="summaryGrid"></div>
+    <div id="incomeSplitSection"></div>
     <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title">🥧 รายรับแยกตามแหล่ง</div><div class="chart-wrap"><canvas id="incomeChart"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">🥧 รายรับแยกตามแหล่ง+สมาชิก</div><div class="chart-wrap"><canvas id="incomeChart"></canvas></div></div>
       <div class="chart-card"><div class="chart-title">🥧 รายจ่ายแยกตาม Tag</div><div class="chart-wrap"><canvas id="expenseChart"></canvas></div></div>
-      <div class="chart-card wide"><div class="chart-title">📈 รายรับ vs รายจ่าย (6 เดือน)</div><div class="chart-wrap tall"><canvas id="trendChart"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">📉 หนี้สิน (6 เดือน)</div><div class="chart-wrap"><canvas id="debtChart"></canvas></div></div>
+      <div class="chart-card wide"><div class="chart-title">📈 รายรับ vs รายจ่าย vs หนี้สิน</div><div class="chart-wrap tall"><canvas id="trendChart"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">📉 หนี้สิน</div><div class="chart-wrap"><canvas id="debtChart"></canvas></div></div>
       <div class="chart-card"><div class="chart-title">👤 ค่าใช้จ่ายแยกสมาชิก</div><div class="chart-wrap"><canvas id="memberChart"></canvas></div></div>
     </div>
     <div class="table-card">
@@ -311,6 +378,10 @@ textarea{resize:vertical;min-height:60px}
   <div class="page" id="page-members">
     <div class="tabs" id="memberTabs"></div>
     <div id="memberContent"></div>
+  </div>
+  <!-- Credit Card -->
+  <div class="page" id="page-creditcard">
+    <div id="ccContent"></div>
   </div>
 
   <!-- Settings -->
@@ -352,6 +423,16 @@ textarea{resize:vertical;min-height:60px}
         <button class="btn btn-primary btn-sm" onclick="addTag()">+ เพิ่ม</button>
       </div>
     </div>
+    <div class="settings-section">
+      <div class="settings-title">💳 จัดการบัตรเครดิต</div>
+      <div id="ccCardList"></div>
+      <div class="add-row">
+        <input id="newCCName" placeholder="ชื่อบัตร เช่น KTC"/>
+        <input id="newCCBank" placeholder="ธนาคาร เช่น กรุงไทย"/>
+        <input id="newCCLimit" type="number" placeholder="วงเงิน" style="width:110px"/>
+        <button class="btn btn-primary btn-sm" onclick="addCreditCard()">+ เพิ่มบัตร</button>
+      </div>
+    </div>
   </div>
 </div><!-- .main -->
 </div><!-- #app -->
@@ -371,6 +452,7 @@ textarea{resize:vertical;min-height:60px}
       <div class="form-group full"><label>รายละเอียด</label><input type="text" id="txDesc" placeholder="เช่น ค่าข้าวมื้อเย็น"/></div>
       <div class="form-group"><label>ของใคร</label><select id="txMember"></select></div>
       <div class="form-group" id="sourceGroup"><label>แหล่งรายรับ / ชื่อหนี้</label><input type="text" id="txSource" placeholder="เช่น เงินเดือน, ธนาคาร A"/></div>
+      <div class="form-group" id="ccGroup" style="display:none"><label>บัตรเครดิต (ถ้าใช้บัตร)</label><select id="txCC"><option value="">-- ไม่ระบุ --</option></select></div>
       <div class="form-group full"><label>Tag</label><div class="tag-selector" id="tagSelector"></div></div>
       <div class="form-group full"><label>หมายเหตุ</label><textarea id="txNote" placeholder="หมายเหตุเพิ่มเติม..."></textarea></div>
     </div>
@@ -381,6 +463,25 @@ textarea{resize:vertical;min-height:60px}
   </div>
 </div>
 
+
+<!-- Recurring Modal -->
+<div class="overlay" id="recurModal">
+  <div class="modal">
+    <div class="modal-title">เพิ่มรายการจ่ายประจำทุกเดือน</div>
+    <div class="form-grid">
+      <div class="form-group full"><label>ชื่อรายการ</label><input type="text" id="recName" placeholder="เช่น ค่าผ่อนรถ"/></div>
+      <div class="form-group"><label>จำนวนเงิน (บาท)</label><input type="number" id="recAmount" placeholder="0.00" min="0" step="0.01"/></div>
+      <div class="form-group"><label>ครบกำหนดวันที่ (ในเดือน)</label><input type="number" id="recDueDay" placeholder="1-31" min="1" max="31"/></div>
+      <div class="form-group"><label>ของใคร</label><select id="recMember"></select></div>
+      <div class="form-group"><label>ประเภท</label><select id="recType"><option value="expense">รายจ่าย</option><option value="debt">หนี้สิน</option></select></div>
+      <div class="form-group full"><label>Tag</label><div class="tag-selector" id="recTagSelector"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeRecurModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="saveRecurring()">บันทึก</button>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -452,13 +553,15 @@ function setSyncBadge(state,msg){
 //  GOOGLE APPS SCRIPT API
 // ════════════════════════════════════════════════
 async function gsGet(params){
-  const url=new URL(gsUrl);
-  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
-  const res=await fetch(url.toString());
+  const qs=Object.entries(params).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
+  const url=gsUrl+(gsUrl.includes('?')?'&':'?')+qs;
+  const res=await fetch(url,{method:'GET',redirect:'follow'});
+  if(!res.ok) throw new Error('HTTP '+res.status);
   return res.json();
 }
 async function gsPost(body){
-  const res=await fetch(gsUrl,{method:'POST',body:JSON.stringify(body),headers:{'Content-Type':'text/plain'}});
+  const res=await fetch(gsUrl,{method:'POST',redirect:'follow',body:JSON.stringify(body),headers:{'Content-Type':'text/plain;charset=utf-8'}});
+  if(!res.ok) throw new Error('HTTP '+res.status);
   return res.json();
 }
 
@@ -467,22 +570,26 @@ async function gsPost(body){
 // ════════════════════════════════════════════════
 async function setupConnect(){
   const url=(document.getElementById('setupUrl').value||'').trim();
-  if(!url){document.getElementById('setupError').textContent='กรุณาใส่ URL';return;}
-  const msg=document.getElementById('setupTestMsg');
-  const err=document.getElementById('setupError');
-  err.textContent='';
-  msg.innerHTML='<span style="animation:spin 1s linear infinite;display:inline-block">⏳</span> กำลังทดสอบการเชื่อมต่อ...';
+  const msgEl=document.getElementById('setupTestMsg');
+  const errEl=document.getElementById('setupError');
+  if(!url){errEl.textContent='กรุณาใส่ URL';return;}
+  errEl.textContent='';
+  msgEl.innerHTML='<span style="animation:spin 1s linear infinite;display:inline-block">⏳</span> กำลังทดสอบการเชื่อมต่อ...';
+  msgEl.style.color='var(--text2)';
   try{
     gsUrl=url;
-    const ping=await gsGet({action:'ping'});
-    if(!ping.ok) throw new Error(ping.message||'ping failed');
-    msg.innerHTML='✅ เชื่อมต่อสำเร็จ! กำลังโหลดข้อมูล...';
-    msg.style.color='var(--green)';
+    const res=await fetch(gsUrl+'?action=ping');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const ping=await res.json();
+    if(!ping||ping.ok!==true) throw new Error((ping&&ping.message)||'Apps Script ตอบกลับผิดปกติ');
+    msgEl.innerHTML='✅ เชื่อมต่อสำเร็จ! กำลังโหลดข้อมูล...';
+    msgEl.style.color='var(--green)';
     localStorage.setItem(GS_URL_KEY,url);
     await loadAndStart();
   }catch(e){
-    msg.textContent='';
-    err.textContent='❌ เชื่อมต่อไม่สำเร็จ: '+e.message+' — ตรวจสอบ URL และ Deploy settings';
+    msgEl.textContent='';
+    errEl.innerHTML='❌ <strong>'+e.message+'</strong><br><small style="color:var(--text3)">ตรวจสอบ: URL ถูกต้อง / Deploy ตั้ง Who has access = Anyone / ลอง Deploy ใหม่</small>';
+    console.error('setupConnect error:',e);
   }
 }
 
@@ -496,7 +603,7 @@ async function loadAndStart(){
     // If first time (no members), init defaults
     if(!data.members||data.members.length===0){
       setLoading(true,'ตั้งค่าเริ่มต้น...');
-      await gsPost({action:'initDefaults',members:DEFAULT_MEMBERS,tags:DEFAULT_TAGS,config:{nextTxId:1,nextMemberId:10,nextTagId:20}});
+      await gsPost({action:'initDefaults',members:DEFAULT_MEMBERS,tags:DEFAULT_TAGS,creditCards:DEFAULT_CC,config:{nextTxId:1,nextMemberId:10,nextTagId:20,nextCCId:10,nextRecId:10}});
       const data2=await gsGet({action:'getAll'});
       applyData(data2);
     } else {
@@ -504,6 +611,8 @@ async function loadAndStart(){
     }
     document.getElementById('app').style.display='block';
     document.getElementById('gsUrlDisplay').textContent=gsUrl;
+    document.getElementById('monthDisplay').textContent=monthLabel(currentMonth);
+    updateDashMemberFilter();
     renderSidebarMembers();
     renderDashboard();
     setSyncBadge('ok');
@@ -516,15 +625,6 @@ async function loadAndStart(){
   }
 }
 
-function applyData(data){
-  db.transactions = (data.transactions||[]).map(t=>({...t,amount:Number(t.amount)||0,id:Number(t.id)||t.id,tags:Array.isArray(t.tags)?t.tags.map(Number).filter(Boolean):[]}));
-  db.members      = data.members||DEFAULT_MEMBERS;
-  db.tags         = data.tags||DEFAULT_TAGS;
-  db.config       = data.config||{nextTxId:1,nextMemberId:10,nextTagId:20};
-  // ensure numeric ids
-  db.members = db.members.map(m=>({...m,id:Number(m.id)||m.id}));
-  db.tags    = db.tags.map(t=>({...t,id:Number(t.id)||t.id}));
-}
 
 async function refreshData(){
   setSyncBadge('syncing','กำลังโหลด...');
@@ -561,58 +661,20 @@ const pageMeta={
   members:['สมาชิก','ดูรายละเอียดแต่ละคน'],
   settings:['ตั้งค่า','จัดการสมาชิก · Tag · การเชื่อมต่อ'],
 };
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  document.querySelector(`[onclick="showPage('${id}')"]`)?.classList.add('active');
-  const[t,s]=pageMeta[id]||[id,''];
-  document.getElementById('pageTitle').textContent=t;
-  document.getElementById('pageSubtitle').textContent=s;
-  if(id==='dashboard') renderDashboard();
-  if(id==='transactions') renderTransactions();
-  if(id==='members') renderMembersPage();
-  if(id==='settings') renderSettings();
-  if(window.innerWidth<=900) document.getElementById('sidebar').classList.remove('open');
-}
+// showPage replaced by patch
+
 function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
-function changeMonth(d){
-  currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+d,1);
-  document.getElementById('monthDisplay').textContent=monthLabel(currentMonth);
-  const active=document.querySelector('.page.active');
-  if(active.id==='page-dashboard') renderDashboard();
-  if(active.id==='page-transactions') renderTransactions();
-  if(active.id==='page-members') renderMembersPage();
-}
+// changeMonth replaced by patch
+
 
 // ════════════════════════════════════════════════
 //  MODAL
 // ════════════════════════════════════════════════
-function openAddModal(id){
-  editingId=id||null;
-  const tx=id?db.transactions.find(t=>t.id==id):null;
-  document.getElementById('modalTitle').textContent=tx?'แก้ไขรายการ':'เพิ่มรายการใหม่';
-  setType(tx?tx.type:'income');
-  document.getElementById('txDate').value=tx?tx.date:new Date().toISOString().split('T')[0];
-  document.getElementById('txAmount').value=tx?tx.amount:'';
-  document.getElementById('txDesc').value=tx?tx.desc:'';
-  document.getElementById('txNote').value=tx?tx.note:'';
-  document.getElementById('txSource').value=tx?tx.source:'';
-  selectedTags=tx?[...(tx.tags||[])]:[];
-  // populate member select
-  const sel=document.getElementById('txMember');
-  sel.innerHTML=db.members.map(m=>`<option value="${m.id}" ${m.id==(tx&&tx.memberId)?'selected':''}>${m.name}</option>`).join('');
-  renderTagSelector();
-  document.getElementById('txModal').classList.add('open');
-}
+// openAddModal replaced by patch
+
 function closeModal(){ document.getElementById('txModal').classList.remove('open'); }
-function setType(t){
-  currentType=t;
-  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelector('.type-btn.'+t).classList.add('active');
-  document.getElementById('sourceGroup').style.display=(t==='income'||t==='debt')?'flex':'none';
-  renderTagSelector();
-}
+// setType replaced by patch
+
 function renderTagSelector(){
   document.getElementById('tagSelector').innerHTML=db.tags.map(tag=>`
     <span class="tag-opt ${selectedTags.includes(tag.id)?'selected':''}" onclick="toggleTag(${tag.id})"
@@ -625,49 +687,8 @@ function toggleTag(id){
   renderTagSelector();
 }
 
-async function saveTransaction(){
-  const date=document.getElementById('txDate').value;
-  const amount=parseFloat(document.getElementById('txAmount').value);
-  const desc=document.getElementById('txDesc').value.trim();
-  const memberId=parseInt(document.getElementById('txMember').value);
-  const source=document.getElementById('txSource').value.trim();
-  const note=document.getElementById('txNote').value.trim();
-  if(!date||!amount||!desc){toast('กรุณากรอกข้อมูลให้ครบ','error');return;}
+// saveTransaction replaced by patch
 
-  const btn=document.getElementById('saveTxBtn');
-  btn.disabled=true; btn.textContent='กำลังบันทึก...';
-  setSyncBadge('syncing');
-
-  let tx;
-  if(editingId){
-    tx=db.transactions.find(t=>t.id==editingId);
-    Object.assign(tx,{date,amount,desc,memberId,source,note,type:currentType,tags:[...selectedTags],updatedAt:new Date().toISOString()});
-  } else {
-    const newId=Number(db.config.nextTxId||1);
-    tx={id:newId,date,amount,desc,memberId,source,note,type:currentType,tags:[...selectedTags],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
-    db.transactions.push(tx);
-    db.config.nextTxId=newId+1;
-  }
-
-  try{
-    const res=await gsPost({action:'saveTx',tx});
-    if(!res.ok) throw new Error(res.message);
-    // save updated config
-    await gsPost({action:'saveConfig',config:{nextTxId:db.config.nextTxId}});
-    setSyncBadge('ok');
-    toast(editingId?'แก้ไขรายการสำเร็จ ✓':'เพิ่มรายการสำเร็จ ✓');
-    closeModal();
-    renderDashboard();
-    const active=document.querySelector('.page.active');
-    if(active.id==='page-transactions') renderTransactions();
-    if(active.id==='page-members') renderMembersPage();
-  }catch(e){
-    setSyncBadge('err','บันทึกล้มเหลว');
-    toast('บันทึกล้มเหลว: '+e.message,'error');
-  }finally{
-    btn.disabled=false; btn.textContent='บันทึก';
-  }
-}
 
 async function deleteTransaction(id){
   if(!confirm('ลบรายการนี้?'))return;
@@ -692,49 +713,12 @@ async function deleteTransaction(id){
 // ════════════════════════════════════════════════
 //  TABLE HTML
 // ════════════════════════════════════════════════
-function txTableHTML(txs,limit){
-  const sorted=[...txs].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const shown=limit?sorted.slice(0,limit):sorted;
-  if(!shown.length) return `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">ยังไม่มีรายการ</div></div>`;
-  return `<table><thead><tr><th>วันที่</th><th>รายละเอียด</th><th>สมาชิก</th><th>Tag</th><th>จำนวนเงิน</th><th></th></tr></thead><tbody>
-    ${shown.map(tx=>{
-      const m=getMember(tx.memberId);
-      const tagHtml=(tx.tags||[]).map(tid=>{const tag=getTag(tid);return tag?`<span class="tag" style="background:${tag.color}22;color:${tag.color};border:1px solid ${tag.color}44">${tag.emoji} ${tag.name}</span>`:''}).join(' ');
-      const sign=tx.type==='income'?'+':'-';
-      const cls=tx.type==='income'?'income':tx.type==='debt'?'debt':'expense';
-      return `<tr>
-        <td class="td-mono">${tx.date}</td>
-        <td><div style="font-weight:500">${tx.desc}</div>${tx.source?`<div style="font-size:11px;color:var(--text3)">${tx.source}</div>`:''}${tx.note?`<div style="font-size:11px;color:var(--text3);font-style:italic">${tx.note}</div>`:''}</td>
-        <td><span class="member-badge"><span class="member-dot" style="background:${m.color}"></span>${m.name}</span></td>
-        <td>${tagHtml}</td>
-        <td class="td-amount ${cls}">${sign}฿${fmt(tx.amount)}</td>
-        <td style="white-space:nowrap">
-          <button onclick="openAddModal(${tx.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:3px 5px">✏️</button>
-          <button onclick="deleteTransaction(${tx.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:3px 5px">🗑️</button>
-        </td>
-      </tr>`;
-    }).join('')}</tbody></table>`;
-}
 
 // ════════════════════════════════════════════════
 //  DASHBOARD
 // ════════════════════════════════════════════════
-function renderDashboard(){
-  const txs=filterByMonth(db.transactions,currentMonth);
-  const income=txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const expense=txs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const debt=txs.filter(t=>t.type==='debt').reduce((s,t)=>s+t.amount,0);
-  const balance=income-expense-debt;
-  document.getElementById('summaryGrid').innerHTML=`
-    <div class="summary-card income"><div class="summary-label">รายรับ</div><div class="summary-amount" style="color:var(--green)">฿${fmt(income)}</div><div class="summary-sub">${txs.filter(t=>t.type==='income').length} รายการ</div></div>
-    <div class="summary-card expense"><div class="summary-label">รายจ่าย</div><div class="summary-amount" style="color:var(--red)">฿${fmt(expense)}</div><div class="summary-sub">${txs.filter(t=>t.type==='expense').length} รายการ</div></div>
-    <div class="summary-card balance"><div class="summary-label">คงเหลือ</div><div class="summary-amount" style="color:${balance>=0?'var(--green)':'var(--red)'}">฿${fmt(balance)}</div><div class="summary-sub">${balance>=0?'✅ บวก':'⚠️ ลบ'}</div></div>
-    <div class="summary-card debt"><div class="summary-label">หนี้สิน</div><div class="summary-amount" style="color:var(--yellow)">฿${fmt(debt)}</div><div class="summary-sub">${txs.filter(t=>t.type==='debt').length} รายการ</div></div>
-  `;
-  renderIncomeChart(txs); renderExpenseChart(txs);
-  renderTrendChart(); renderDebtChart(); renderMemberChart(txs);
-  document.getElementById('recentTable').innerHTML=txTableHTML(txs,6);
-}
+// renderDashboard replaced by patch
+
 
 function dc(k){if(chartInstances[k]){chartInstances[k].destroy();chartInstances[k]=null;}}
 const chartOpts={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:11},boxWidth:11,padding:14}}}};
@@ -788,121 +772,23 @@ function renderMemberChart(txs){
 // ════════════════════════════════════════════════
 //  TRANSACTIONS PAGE
 // ════════════════════════════════════════════════
-function renderTransactions(){
-  document.getElementById('filterRow').innerHTML=`
-    <input class="filter-input" id="searchInput" placeholder="🔍 ค้นหา..." onkeyup="applyFilters()" style="width:160px">
-    <select class="filter-select" id="typeFilter" onchange="applyFilters()">
-      <option value="">ทุกประเภท</option><option value="income">รายรับ</option><option value="expense">รายจ่าย</option><option value="debt">หนี้สิน</option>
-    </select>
-    <select class="filter-select" id="memberFilter" onchange="applyFilters()">
-      <option value="">ทุกสมาชิก</option>
-      ${db.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}
-    </select>
-    <select class="filter-select" id="tagFilter" onchange="applyFilters()">
-      <option value="">ทุก Tag</option>
-      ${db.tags.map(t=>`<option value="${t.id}">${t.emoji} ${t.name}</option>`).join('')}
-    </select>
-  `;
-  applyFilters();
-}
-function applyFilters(){
-  const txs=filterByMonth(db.transactions,currentMonth);
-  const s=(document.getElementById('searchInput')?.value||'').toLowerCase();
-  const type=document.getElementById('typeFilter')?.value||'';
-  const mid=document.getElementById('memberFilter')?.value||'';
-  const tid=parseInt(document.getElementById('tagFilter')?.value||'');
-  const f=txs.filter(tx=>{
-    if(s&&!tx.desc.toLowerCase().includes(s)&&!(tx.source||'').toLowerCase().includes(s))return false;
-    if(type&&tx.type!==type)return false;
-    if(mid&&tx.memberId!=mid)return false;
-    if(tid&&!(tx.tags||[]).includes(tid))return false;
-    return true;
-  });
-  document.getElementById('allTransTable').innerHTML=txTableHTML(f);
-}
+// renderTransactions replaced by patch
+
+// applyFilters replaced by patch
+
 
 // ════════════════════════════════════════════════
 //  MEMBERS PAGE
 // ════════════════════════════════════════════════
-function renderMembersPage(){
-  if(!activeMemberTab&&db.members.length) activeMemberTab=null;
-  document.getElementById('memberTabs').innerHTML=`
-    <button class="tab-btn ${!activeMemberTab?'active':''}" onclick="setMemberTab(null)">👥 ภาพรวม</button>
-    ${db.members.map(m=>`<button class="tab-btn ${activeMemberTab==m.id?'active':''}" onclick="setMemberTab(${m.id})"><span style="color:${m.color}">●</span> ${m.name}</button>`).join('')}
-  `;
-  const c=document.getElementById('memberContent');
-  const txs=filterByMonth(db.transactions,currentMonth);
-  if(!activeMemberTab){
-    c.innerHTML=db.members.map(m=>{
-      const mTx=txs.filter(t=>t.memberId==m.id);
-      const inc=mTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-      const exp=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-      const dbt=mTx.filter(t=>t.type==='debt').reduce((s,t)=>s+t.amount,0);
-      const total=inc+exp+dbt;
-      const allTotal=txs.reduce((s,t)=>s+t.amount,0);
-      const pct=allTotal>0?(total/allTotal*100):0;
-      return `<div class="member-detail-card">
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-          <div class="member-avatar-xl" style="background:${m.color}22;color:${m.color}">${m.name[0]}</div>
-          <div><div style="font-size:17px;font-weight:700">${m.name}</div><div style="font-size:12px;color:var(--text3)">${m.role}</div></div>
-        </div>
-        <div class="member-stats">
-          <div class="mstat">รายรับ <span style="color:var(--green)">฿${fmt(inc)}</span></div>
-          <div class="mstat">รายจ่าย <span style="color:var(--red)">฿${fmt(exp)}</span></div>
-          <div class="mstat">หนี้สิน <span style="color:var(--yellow)">฿${fmt(dbt)}</span></div>
-          <div class="mstat">สัดส่วน <span style="color:var(--blue)">${pct.toFixed(1)}%</span></div>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${m.color}"></div></div>
-      </div>`;
-    }).join('');
-    return;
-  }
-  const m=getMember(activeMemberTab);
-  const mTx=txs.filter(t=>t.memberId==activeMemberTab);
-  const inc=mTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const exp=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const dbt=mTx.filter(t=>t.type==='debt').reduce((s,t)=>s+t.amount,0);
-  c.innerHTML=`
-    <div class="member-detail-card">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-        <div class="member-avatar-xl" style="background:${m.color}22;color:${m.color}">${m.name[0]}</div>
-        <div>
-          <div style="font-size:18px;font-weight:700">${m.name}</div><div style="font-size:12px;color:var(--text3)">${m.role}</div>
-          <div class="member-stats" style="margin-top:8px">
-            <div class="mstat">รายรับ <span style="color:var(--green)">฿${fmt(inc)}</span></div>
-            <div class="mstat">รายจ่าย <span style="color:var(--red)">฿${fmt(exp)}</span></div>
-            <div class="mstat">หนี้สิน <span style="color:var(--yellow)">฿${fmt(dbt)}</span></div>
-            <div class="mstat">คงเหลือ <span style="color:var(--blue)">฿${fmt(inc-exp-dbt)}</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="table-card">${txTableHTML(mTx)}</div>
-  `;
-}
+// renderMembersPage replaced by patch
+
 function setMemberTab(id){ activeMemberTab=id; renderMembersPage(); }
 
 // ════════════════════════════════════════════════
 //  SETTINGS
 // ════════════════════════════════════════════════
-function renderSettings(){
-  document.getElementById('memberList').innerHTML=db.members.map(m=>`
-    <div class="member-item">
-      <div class="member-info">
-        <div class="member-avatar-lg" style="background:${m.color}22;color:${m.color}">${m.name[0]}</div>
-        <div><div class="member-name">${m.name}</div><div class="member-role">${m.role}</div></div>
-      </div>
-      <button onclick="deleteMember(${m.id})" class="btn btn-danger btn-sm">ลบ</button>
-    </div>`).join('');
-  document.getElementById('tagsGrid').innerHTML=db.tags.map(tag=>`
-    <div class="tag-manage" style="color:${tag.color};border-color:${tag.color}44">
-      ${tag.emoji} ${tag.name}
-      <span style="font-size:10px;color:var(--text3);margin:0 3px">(${tag.type})</span>
-      <button class="tag-del" onclick="deleteTag(${tag.id})">✕</button>
-    </div>`).join('');
-  document.getElementById('gsUrlDisplay').textContent=gsUrl;
-  renderSidebarMembers();
-}
+// renderSettings replaced by patch
+
 
 async function addMember(){
   const name=document.getElementById('newMemberName').value.trim();
@@ -987,6 +873,525 @@ function init(){
 }
 
 init();
+
+// ── PERIOD ──
+let currentPeriod='month';
+function setPeriod(p){
+  currentPeriod=p;
+  document.querySelectorAll('.period-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.period-tab[onclick="setPeriod('${p}')"]`)?.classList.add('active');
+  const mnb=document.getElementById('monthNavBar');
+  if(mnb)mnb.style.display=(p==='day'||p==='week')?'none':'flex';
+  if(p==='year')document.getElementById('monthDisplay').textContent=`ปี ${currentMonth.getFullYear()+543}`;
+  else document.getElementById('monthDisplay').textContent=monthLabel(currentMonth);
+  const active=document.querySelector('.page.active');
+  if(active&&active.id==='page-dashboard')renderDashboard();
+  if(active&&active.id==='page-transactions')renderTransactions();
+}
+function getPeriodTxs(txs){
+  if(currentPeriod==='day'){const today=new Date().toISOString().split('T')[0];return txs.filter(t=>t.date===today);}
+  if(currentPeriod==='week'){const now=new Date();const dow=now.getDay();const start=new Date(now);start.setDate(now.getDate()-dow);start.setHours(0,0,0,0);const end=new Date(start);end.setDate(start.getDate()+6);end.setHours(23,59,59,999);return txs.filter(t=>{const d=new Date(t.date);return d>=start&&d<=end;});}
+  if(currentPeriod==='year'){const y=currentMonth.getFullYear();return txs.filter(t=>new Date(t.date).getFullYear()===y);}
+  return txs.filter(t=>monthKey(t.date)===monthKey(currentMonth));
+}
+const allMonthsOfYear=y=>Array.from({length:12},(_,i)=>new Date(y,i,1));
+
+// ── CC & RECURRING in db ──
+const DEFAULT_CC=[
+  {id:1,name:'KTC',bank:'กรุงไทย',limit:100000,color:'#5b8af0'},
+  {id:2,name:'บัวหลวง',bank:'กรุงเทพ',limit:50000,color:'#3ddc97'},
+];
+db.creditCards=[];db.recurring=[];
+
+// ── PATCH applyData ──
+function applyData(data){
+  // original logic inlined
+  db.transactions=(data.transactions||[]).map(t=>({...t,amount:Number(t.amount)||0,id:Number(t.id)||t.id,tags:Array.isArray(t.tags)?t.tags.map(Number).filter(Boolean):[],ccId:t.ccId?Number(t.ccId):null}));
+  db.members=(data.members||DEFAULT_MEMBERS).map(m=>({...m,id:Number(m.id)||m.id}));
+  db.tags=(data.tags||DEFAULT_TAGS).map(t=>({...t,id:Number(t.id)||t.id}));
+  db.config=data.config||{nextTxId:1,nextMemberId:10,nextTagId:20,nextCCId:10,nextRecId:10};
+  db.creditCards=(data.creditCards||DEFAULT_CC).map(c=>({...c,id:Number(c.id)||c.id,limit:Number(c.limit)||0}));
+  db.recurring=(data.recurring||[]).map(r=>({...r,id:Number(r.id)||r.id,amount:Number(r.amount)||0,dueDay:Number(r.dueDay)||1,tags:Array.isArray(r.tags)?r.tags.map(Number).filter(Boolean):[]}));
+  db.members=(data.members||db.members).map(m=>({...m,id:Number(m.id)||m.id}));
+  db.tags=(data.tags||db.tags).map(t=>({...t,id:Number(t.id)||t.id}));
+  updateDashMemberFilter();
+}
+
+function updateDashMemberFilter(){
+  const sel=document.getElementById('dashMemberFilter');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">ทุกสมาชิก</option>'+db.members.map(m=>`<option value="${m.id}" ${cur==m.id?'selected':''}>${m.name}</option>`).join('');
+}
+
+// ── PATCH pageMeta ──
+pageMeta.creditcard=['บัตรเครดิต','สรุปค่าใช้จ่ายแต่ละบัตร'];
+pageMeta.members=['สมาชิก','แผนการเงินรายปีและรายการแต่ละคน'];
+
+// ── PATCH showPage ──
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id)?.classList.add('active');
+  document.querySelector(`[onclick="showPage('${id}')"]`)?.classList.add('active');
+  const meta={dashboard:['Dashboard','ภาพรวมการเงิน'],transactions:['รายการทั้งหมด','ค้นหาและกรองรายการ'],members:['สมาชิก','แผนการเงินรายปีและรายการแต่ละคน'],creditcard:['บัตรเครดิต','สรุปค่าใช้จ่ายแต่ละบัตร'],settings:['ตั้งค่า','จัดการสมาชิก · Tag · บัตร']};
+  const[t,s]=meta[id]||[id,''];
+  document.getElementById('pageTitle').textContent=t;document.getElementById('pageSubtitle').textContent=s;
+  if(id==='dashboard')renderDashboard();
+  if(id==='transactions')renderTransactions();
+  if(id==='members')renderMembersPage();
+  if(id==='creditcard')renderCreditCard();
+  if(id==='settings')renderSettings();
+  if(window.innerWidth<=900)document.getElementById('sidebar').classList.remove('open');
+}
+
+// ── PATCH changeMonth ──
+function changeMonth(d){
+  if(currentPeriod==='year')currentMonth=new Date(currentMonth.getFullYear()+d,0,1);
+  else currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+d,1);
+  document.getElementById('monthDisplay').textContent=currentPeriod==='year'?`ปี ${currentMonth.getFullYear()+543}`:monthLabel(currentMonth);
+  const active=document.querySelector('.page.active');
+  if(active.id==='page-dashboard')renderDashboard();
+  if(active.id==='page-transactions')renderTransactions();
+  if(active.id==='page-members')renderMembersPage();
+  if(active.id==='page-creditcard')renderCreditCard();
+}
+
+// ── PATCH openAddModal ──
+function openAddModal(id){
+  editingId=id||null;const tx=id?db.transactions.find(t=>t.id==id):null;
+  document.getElementById('modalTitle').textContent=tx?'แก้ไขรายการ':'เพิ่มรายการใหม่';
+  setType(tx?tx.type:'expense');
+  document.getElementById('txDate').value=tx?tx.date:new Date().toISOString().split('T')[0];
+  document.getElementById('txAmount').value=tx?tx.amount:'';
+  document.getElementById('txDesc').value=tx?tx.desc:'';
+  document.getElementById('txNote').value=tx?tx.note:'';
+  document.getElementById('txSource').value=tx?tx.source:'';
+  selectedTags=tx?[...(tx.tags||[])]:[];
+  const sel=document.getElementById('txMember');
+  sel.innerHTML=db.members.map(m=>`<option value="${m.id}" ${m.id==(tx&&tx.memberId)?'selected':''}>${m.name}</option>`).join('');
+  const tx=id?db.transactions.find(t=>t.id==id):null;
+  const ccSel=document.getElementById('txCC');
+  if(ccSel){ccSel.innerHTML='<option value="">-- ไม่ระบุ --</option>'+db.creditCards.map(c=>`<option value="${c.id}" ${c.id==(tx&&tx.ccId)?'selected':''}>${c.name} (${c.bank})</option>`).join('');}
+}
+
+// ── PATCH setType ──
+function setType(t){
+  currentType=t;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.type-btn.'+t)?.classList.add('active');
+  document.getElementById('sourceGroup').style.display=(t==='income'||t==='debt')?'flex':'none';
+  const cg=document.getElementById('ccGroup');if(cg)cg.style.display=t==='expense'?'flex':'none';
+}
+
+// saveTransaction - full version with ccId support
+async function saveTransaction(){
+  const date=document.getElementById('txDate').value;
+  const amount=parseFloat(document.getElementById('txAmount').value);
+  const desc=document.getElementById('txDesc').value.trim();
+  const memberId=parseInt(document.getElementById('txMember').value);
+  const source=document.getElementById('txSource').value.trim();
+  const note=document.getElementById('txNote').value.trim();
+  const ccIdEl=document.getElementById('txCC');
+  const ccId=ccIdEl&&ccIdEl.value?parseInt(ccIdEl.value):null;
+  if(!date||!amount||!desc){toast('กรุณากรอกข้อมูลให้ครบ','error');return;}
+  const btn=document.getElementById('saveTxBtn');btn.disabled=true;btn.textContent='บันทึก...';
+  setSyncBadge('syncing');
+  let tx;
+  if(editingId){
+    tx=db.transactions.find(t=>t.id==editingId);
+    Object.assign(tx,{date,amount,desc,memberId,source,note,type:currentType,tags:[...selectedTags],ccId,updatedAt:new Date().toISOString()});
+  }else{
+    const newId=Number(db.config.nextTxId||1);
+    tx={id:newId,date,amount,desc,memberId,source,note,type:currentType,tags:[...selectedTags],ccId,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    db.transactions.push(tx);db.config.nextTxId=newId+1;
+  }
+  try{
+    const res=await gsPost({action:'saveTx',tx});if(!res.ok)throw new Error(res.message);
+    await gsPost({action:'saveConfig',config:{nextTxId:db.config.nextTxId}});
+    setSyncBadge('ok');toast(editingId?'แก้ไขสำเร็จ ✓':'เพิ่มรายการสำเร็จ ✓');closeModal();
+    renderDashboard();const active=document.querySelector('.page.active');
+    if(active.id==='page-transactions')renderTransactions();
+    if(active.id==='page-members')renderMembersPage();
+    if(active.id==='page-creditcard')renderCreditCard();
+  }catch(e){setSyncBadge('err','บันทึกล้มเหลว');toast('บันทึกล้มเหลว: '+e.message,'error');}
+  finally{btn.disabled=false;btn.textContent='บันทึก';}
+}
+
+// ── SPLIT TABLE ──
+// txTableHTML fully replaced
+function txTableHTML(txs,limit){
+  const sorted=[...txs].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const shown=limit?sorted.slice(0,limit):sorted;
+  if(!shown.length)return`<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">ยังไม่มีรายการ</div></div>`;
+  const getCC_=id=>db.creditCards.find(c=>c.id==id);
+  return`<div style="overflow-x:auto"><table>
+    <thead><tr><th>วันที่</th><th>รายละเอียด</th><th>สมาชิก</th><th>Tag</th>
+      <th class="right" style="color:var(--green)">รายรับ</th>
+      <th class="right" style="color:var(--red)">รายจ่าย</th>
+      <th class="right" style="color:var(--yellow)">หนี้สิน</th>
+      <th></th></tr></thead>
+    <tbody>${shown.map(tx=>{
+      const m=getMember(tx.memberId);
+      const tagHtml=(tx.tags||[]).map(tid=>{const tag=getTag(tid);return tag?`<span class="tag" style="background:${tag.color}22;color:${tag.color};border:1px solid ${tag.color}44">${tag.emoji}${tag.name}</span>`:''}).join(' ');
+      const cc=tx.ccId?getCC_(tx.ccId):null;
+      const ccTag=cc?`<span class="tag" style="background:var(--blue-dim);color:var(--blue);border:1px solid rgba(91,138,240,.3)">💳${cc.name}</span>`:'';
+      const incCell=tx.type==='income'?`<td class="td-income">+฿${fmt(tx.amount)}</td>`:'<td class="td-empty">—</td>';
+      const expCell=tx.type==='expense'?`<td class="td-expense">-฿${fmt(tx.amount)}</td>`:'<td class="td-empty">—</td>';
+      const dbtCell=tx.type==='debt'?`<td class="td-debt">-฿${fmt(tx.amount)}</td>`:'<td class="td-empty">—</td>';
+      return`<tr>
+        <td class="td-mono">${tx.date}</td>
+        <td><div style="font-weight:500">${tx.desc}</div>${tx.source?`<div style="font-size:10px;color:var(--text3)">${tx.source}</div>`:''}${tx.note?`<div style="font-size:10px;color:var(--text3);font-style:italic">${tx.note}</div>`:''}</td>
+        <td><span class="member-badge"><span class="member-dot" style="background:${m.color}"></span>${m.name}</span></td>
+        <td>${tagHtml}${ccTag}</td>
+        ${incCell}${expCell}${dbtCell}
+        <td style="white-space:nowrap">
+          <button onclick="openAddModal(${tx.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;padding:2px 4px">✏️</button>
+          <button onclick="deleteTransaction(${tx.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;padding:2px 4px">🗑️</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+// ── PATCH renderDashboard ──
+// (full replacement below, no orig reference)
+function renderDashboard(){
+  const memberFilterVal=document.getElementById('dashMemberFilter')?.value||'';
+  const typeFilterVal=document.getElementById('dashTypeFilter')?.value||'';
+  let all=getPeriodTxs(db.transactions);
+  if(memberFilterVal)all=all.filter(t=>t.memberId==memberFilterVal);
+  if(typeFilterVal)all=all.filter(t=>t.type===typeFilterVal);
+
+  const income=all.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const expense=all.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const debt=all.filter(t=>t.type==='debt').reduce((s,t)=>s+t.amount,0);
+  const balance=income-expense-debt;
+
+  document.getElementById('summaryGrid').innerHTML=`
+    <div class="summary-card income"><div class="summary-label">รายรับ</div><div class="summary-amount" style="color:var(--green)">฿${fmt(income)}</div><div class="summary-sub">${all.filter(t=>t.type==='income').length} รายการ</div></div>
+    <div class="summary-card expense"><div class="summary-label">รายจ่าย</div><div class="summary-amount" style="color:var(--red)">฿${fmt(expense)}</div><div class="summary-sub">${all.filter(t=>t.type==='expense').length} รายการ</div></div>
+    <div class="summary-card balance"><div class="summary-label">คงเหลือ</div><div class="summary-amount" style="color:${balance>=0?'var(--green)':'var(--red)'}">฿${fmt(balance)}</div><div class="summary-sub">${balance>=0?'✅ บวก':'⚠️ ลบ'}</div></div>
+    <div class="summary-card debt"><div class="summary-label">หนี้สิน</div><div class="summary-amount" style="color:var(--yellow)">฿${fmt(debt)}</div><div class="summary-sub">${all.filter(t=>t.type==='debt').length} รายการ</div></div>
+  `;
+
+  // Income split by member
+  const incomeByMember={};
+  all.filter(t=>t.type==='income').forEach(t=>{
+    const m=getMember(t.memberId);const key=m.name;
+    if(!incomeByMember[key])incomeByMember[key]={color:m.color,total:0,sources:{}};
+    incomeByMember[key].total+=t.amount;
+    const src=t.source||'ไม่ระบุ';incomeByMember[key].sources[src]=(incomeByMember[key].sources[src]||0)+t.amount;
+  });
+  const splitCards=Object.entries(incomeByMember).map(([name,info])=>`
+    <div class="income-split-card">
+      <div class="isc-label">รายรับ</div>
+      <div class="isc-name">${name}</div>
+      <div class="isc-amount">฿${fmt(info.total)}</div>
+      <div class="isc-sub">${Object.entries(info.sources).map(([k,v])=>`${k}: ฿${fmt(v)}`).join(' · ')}</div>
+    </div>`).join('');
+  const sec=document.getElementById('incomeSplitSection');
+  if(sec)sec.innerHTML=splitCards?`<div class="income-split-grid">${splitCards}</div>`:'';
+
+  // Charts (use filtered txs)
+  renderIncomeChartData(all);renderExpenseChartData(all);
+  renderTrendChart();renderDebtChart();renderMemberChartData(all);
+  document.getElementById('recentTable').innerHTML=txTableHTML(all,8);
+}
+
+function renderIncomeChartData(txs){
+  if(chartInstances.income){chartInstances.income.destroy();chartInstances.income=null;}
+  const inc=txs.filter(t=>t.type==='income');const map={};
+  inc.forEach(t=>{const m=getMember(t.memberId);const k=(t.source||t.desc)+' ('+m.name+')';map[k]=(map[k]||0)+t.amount;});
+  const L=Object.keys(map),D=Object.values(map);
+  if(!L.length){document.getElementById('incomeChart').style.display='none';return;}
+  document.getElementById('incomeChart').style.display='';
+  const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
+  chartInstances.income=new Chart(document.getElementById('incomeChart'),{type:'doughnut',data:{labels:L,datasets:[{data:D,backgroundColor:COLORS.slice(0,L.length),borderWidth:0,hoverOffset:5}]},options:{cutout:'60%',...cOpts2,animation:{duration:400}}});
+}
+function renderExpenseChartData(txs){
+  if(chartInstances.expense){chartInstances.expense.destroy();chartInstances.expense=null;}
+  const exp=txs.filter(t=>t.type==='expense');const map={};
+  exp.forEach(tx=>{if(tx.tags&&tx.tags.length)tx.tags.forEach(tid=>{const tag=getTag(tid);if(tag)map[tag.name]=(map[tag.name]||0)+tx.amount/tx.tags.length;});else map['ไม่ระบุ']=(map['ไม่ระบุ']||0)+tx.amount;});
+  const L=Object.keys(map),D=Object.values(map);
+  if(!L.length){document.getElementById('expenseChart').style.display='none';return;}
+  document.getElementById('expenseChart').style.display='';
+  const colors=L.map(l=>{const tag=db.tags.find(t=>t.name===l);return tag?tag.color:'#666';});
+  const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
+  chartInstances.expense=new Chart(document.getElementById('expenseChart'),{type:'doughnut',data:{labels:L,datasets:[{data:D,backgroundColor:colors,borderWidth:0,hoverOffset:5}]},options:{cutout:'60%',...cOpts2,animation:{duration:400}}});
+}
+function renderMemberChartData(txs){
+  if(chartInstances.member){chartInstances.member.destroy();chartInstances.member=null;}
+  const map={};txs.filter(t=>t.type==='expense').forEach(tx=>{const m=getMember(tx.memberId);map[m.name]=(map[m.name]||0)+tx.amount;});
+  const L=Object.keys(map),D=Object.values(map);
+  if(!L.length){document.getElementById('memberChart').style.display='none';return;}
+  document.getElementById('memberChart').style.display='';
+  const colors=L.map(l=>{const m=db.members.find(m=>m.name===l);return m?m.color:'#666';});
+  const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
+  chartInstances.member=new Chart(document.getElementById('memberChart'),{type:'doughnut',data:{labels:L,datasets:[{data:D,backgroundColor:colors,borderWidth:0,hoverOffset:5}]},options:{cutout:'60%',...cOpts2,animation:{duration:400}}});
+}
+
+// ── PATCH renderTrendChart to include debt ──
+function renderTrendChart(){
+  if(chartInstances.trend){chartInstances.trend.destroy();chartInstances.trend=null;}
+  const months=last6();
+  const iD=months.map(m=>db.transactions.filter(t=>monthKey(t.date)===monthKey(m)&&t.type==='income').reduce((s,t)=>s+t.amount,0));
+  const eD=months.map(m=>db.transactions.filter(t=>monthKey(t.date)===monthKey(m)&&t.type==='expense').reduce((s,t)=>s+t.amount,0));
+  const dD=months.map(m=>db.transactions.filter(t=>monthKey(t.date)===monthKey(m)&&t.type==='debt').reduce((s,t)=>s+t.amount,0));
+  const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
+  chartInstances.trend=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:months.map(m=>m.toLocaleDateString('th-TH',{month:'short',year:'2-digit'})),datasets:[
+    {label:'รายรับ',data:iD,borderColor:'#3ddc97',backgroundColor:'rgba(61,220,151,.07)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#3ddc97'},
+    {label:'รายจ่าย',data:eD,borderColor:'#ff5f6d',backgroundColor:'rgba(255,95,109,.07)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#ff5f6d'},
+    {label:'หนี้สิน',data:dD,borderColor:'#f7c35f',backgroundColor:'rgba(247,195,95,.07)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#f7c35f'},
+  ]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},...cOpts2,animation:{duration:500}}});
+}
+
+// ── PATCH renderTransactions ──
+// (full replacement below)
+function renderTransactions(){
+  document.getElementById('filterRow').innerHTML=`
+    <input class="filter-input" id="searchInput" placeholder="🔍 ค้นหา..." onkeyup="applyFilters()" style="width:140px">
+    <select class="filter-select" id="typeFilter" onchange="applyFilters()"><option value="">ทุกประเภท</option><option value="income">รายรับ</option><option value="expense">รายจ่าย</option><option value="debt">หนี้สิน</option></select>
+    <select class="filter-select" id="memberFilter" onchange="applyFilters()"><option value="">ทุกสมาชิก</option>${db.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}</select>
+    <select class="filter-select" id="tagFilter" onchange="applyFilters()"><option value="">ทุก Tag</option>${db.tags.map(t=>`<option value="${t.id}">${t.emoji}${t.name}</option>`).join('')}</select>
+    <select class="filter-select" id="ccFilter" onchange="applyFilters()"><option value="">ทุกบัตร</option>${db.creditCards.map(c=>`<option value="${c.id}">💳${c.name}</option>`).join('')}</select>
+  `;
+  applyFilters();
+}
+// applyFilters fully replaced
+function applyFilters(){
+  let txs=getPeriodTxs(db.transactions);
+  const s=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const type=document.getElementById('typeFilter')?.value||'';
+  const mid=document.getElementById('memberFilter')?.value||'';
+  const tid=parseInt(document.getElementById('tagFilter')?.value||'');
+  const cid=parseInt(document.getElementById('ccFilter')?.value||'');
+  txs=txs.filter(tx=>{
+    if(s&&!tx.desc.toLowerCase().includes(s)&&!(tx.source||'').toLowerCase().includes(s))return false;
+    if(type&&tx.type!==type)return false;
+    if(mid&&tx.memberId!=mid)return false;
+    if(tid&&!(tx.tags||[]).includes(tid))return false;
+    if(cid&&tx.ccId!=cid)return false;
+    return true;
+  });
+  document.getElementById('allTransTable').innerHTML=txTableHTML(txs);
+}
+
+// ── MEMBERS PAGE WITH ANNUAL PLAN + RECURRING ──
+let activeMemberRecTab=null;
+let selectedRecTags=[];
+
+// renderMembersPage fully replaced
+function renderMembersPage(){
+  document.getElementById('memberTabs').innerHTML=`
+    <button class="tab-btn ${!activeMemberTab?'active':''}" onclick="setMemberTab(null)">👥 ภาพรวม</button>
+    ${db.members.map(m=>`<button class="tab-btn ${activeMemberTab==m.id?'active':''}" onclick="setMemberTab(${m.id})"><span style="color:${m.color}">●</span> ${m.name}</button>`).join('')}
+  `;
+  if(!activeMemberTab)renderMemberOverview();
+  else renderMemberDetail(activeMemberTab);
+}
+function renderMemberOverview(){
+  const c=document.getElementById('memberContent');
+  const year=currentMonth.getFullYear();
+  c.innerHTML=db.members.map(m=>{
+    const mTx=db.transactions.filter(t=>t.memberId==m.id&&new Date(t.date).getFullYear()===year);
+    const inc=mTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const exp=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+    const dbt=mTx.filter(t=>t.type==='debt').reduce((s,t)=>s+t.amount,0);
+    const allT=db.transactions.filter(t=>new Date(t.date).getFullYear()===year).reduce((s,t)=>s+t.amount,0);
+    const pct=allT>0?((inc+exp+dbt)/allT*100):0;
+    return`<div class="member-detail-card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div class="member-avatar-xl" style="background:${m.color}22;color:${m.color}">${m.name[0]}</div>
+        <div><div style="font-size:16px;font-weight:700">${m.name}</div><div style="font-size:11px;color:var(--text3)">${m.role}</div>
+          <div class="member-stats"><div class="mstat">รายรับ<span style="color:var(--green)">฿${fmt(inc)}</span></div><div class="mstat">รายจ่าย<span style="color:var(--red)">฿${fmt(exp)}</span></div><div class="mstat">หนี้สิน<span style="color:var(--yellow)">฿${fmt(dbt)}</span></div><div class="mstat">คงเหลือ<span style="color:var(--blue)">฿${fmt(inc-exp-dbt)}</span></div></div>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${m.color}"></div></div>
+    </div>`;
+  }).join('');
+}
+function renderMemberDetail(memberId){
+  const m=getMember(memberId);
+  const year=currentMonth.getFullYear();
+  const months=allMonthsOfYear(year);
+  const mTx=db.transactions.filter(t=>t.memberId==memberId);
+  const yTx=mTx.filter(t=>new Date(t.date).getFullYear()===year);
+  const inc=yTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const exp=yTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const dbt=yTx.filter(t=>t.type==='debt').reduce((s,t)=>s+t.amount,0);
+  const monthHeaders=months.map(mn=>`<th>${mn.toLocaleDateString('th-TH',{month:'short'})}</th>`).join('');
+  function annualTable(type,label,color){
+    const typeTx=yTx.filter(t=>t.type===type);
+    const groups={};typeTx.forEach(t=>{const k=t.desc+(t.source?'|'+t.source:'');if(!groups[k])groups[k]={label:t.desc,sub:t.source||'',months:{}};groups[k].months[monthKey(t.date)]=(groups[k].months[monthKey(t.date)]||0)+t.amount;});
+    if(!Object.keys(groups).length)return`<div style="font-size:11px;color:var(--text3);padding:8px 0">ยังไม่มีรายการ</div>`;
+    const totals={};months.forEach(mn=>{const mk=monthKey(mn);totals[mk]=Object.values(groups).reduce((s,g)=>s+(g.months[mk]||0),0);});
+    return`<div style="overflow-x:auto"><table class="annual-table">
+      <thead><tr><th class="label-col">${label}</th>${monthHeaders}<th>รวม</th></tr></thead>
+      <tbody>${Object.values(groups).map(g=>{const total=Object.values(g.months).reduce((s,v)=>s+v,0);return`<tr><td class="label-col"><div>${g.label}</div>${g.sub?`<div style="font-size:9px;color:var(--text3)">${g.sub}</div>`:''}</td>${months.map(mn=>`<td>${g.months[monthKey(mn)]?`<span style="color:${color}">฿${fmt(g.months[monthKey(mn)])}</span>`:'-'}</td>`).join('')}<td style="color:${color};font-weight:700">฿${fmt(total)}</td></tr>`;}).join('')}
+      <tr class="total-row"><td class="label-col">รวม</td>${months.map(mn=>`<td>฿${fmt(totals[monthKey(mn)])}</td>`).join('')}<td>฿${fmt(Object.values(totals).reduce((s,v)=>s+v,0))}</td></tr></tbody></table></div>`;
+  }
+  const myRecurring=db.recurring.filter(r=>r.memberId==memberId);
+  const today=new Date().getDate();
+  const recurHTML=myRecurring.length?myRecurring.map(r=>{
+    const soon=r.dueDay&&Math.abs(r.dueDay-today)<=3;
+    return`<div class="recurring-item"><div class="recurring-info"><div class="recurring-name">${r.name}</div><div class="recurring-meta">${(r.tags||[]).map(tid=>{const tag=getTag(tid);return tag?`${tag.emoji}${tag.name}`:''}).join(' · ')}</div></div><div style="display:flex;align-items:center;gap:8px"><div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--red)">฿${fmt(r.amount)}</div>${r.dueDay?`<span class="due-badge ${soon?'soon':''}">วันที่ ${r.dueDay}</span>`:''}<button onclick="deleteRecurring(${r.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px">🗑️</button></div></div>`;
+  }).join(''):`<div style="font-size:12px;color:var(--text3);padding:10px 0">ยังไม่มีรายการประจำ</div>`;
+  const canvasId='mLineChart'+memberId;
+  document.getElementById('memberContent').innerHTML=`
+    <div class="member-detail-card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div class="member-avatar-xl" style="background:${m.color}22;color:${m.color}">${m.name[0]}</div>
+        <div><div style="font-size:17px;font-weight:700">${m.name}</div><div style="font-size:11px;color:var(--text3)">${m.role}</div>
+          <div class="member-stats"><div class="mstat">รายรับ<span style="color:var(--green)">฿${fmt(inc)}</span></div><div class="mstat">รายจ่าย<span style="color:var(--red)">฿${fmt(exp)}</span></div><div class="mstat">หนี้สิน<span style="color:var(--yellow)">฿${fmt(dbt)}</span></div><div class="mstat">คงเหลือ<span style="color:var(--blue)">฿${fmt(inc-exp-dbt)}</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="table-card" style="padding:16px;margin-bottom:14px">
+      <div class="chart-title">📈 รายรับ vs รายจ่าย+หนี้สิน (${year+543})</div>
+      <div class="chart-wrap tall"><canvas id="${canvasId}"></canvas></div>
+    </div>
+    <div class="table-card" style="margin-bottom:14px"><div class="table-header"><div class="table-title">📥 แผนรายรับ ปี ${year+543}</div></div><div style="padding:14px">${annualTable('income','รายรับ','var(--green)')}</div></div>
+    <div class="table-card" style="margin-bottom:14px"><div class="table-header"><div class="table-title">📤 แผนรายจ่าย ปี ${year+543}</div></div><div style="padding:14px">${annualTable('expense','รายจ่าย','var(--red)')}</div></div>
+    <div class="table-card" style="margin-bottom:14px"><div class="table-header"><div class="table-title">💸 แผนหนี้สิน ปี ${year+543}</div></div><div style="padding:14px">${annualTable('debt','หนี้สิน','var(--yellow)')}</div></div>
+    <div class="table-card" style="margin-bottom:14px">
+      <div class="table-header"><div class="table-title">📅 รายการจ่ายประจำ</div><button class="btn btn-primary btn-sm" onclick="openRecurModal(${memberId})">+ เพิ่ม</button></div>
+      <div style="padding:12px">${recurHTML}</div>
+    </div>
+    <div class="table-card"><div class="table-header"><div class="table-title">รายการ ${monthLabel(currentMonth)}</div></div>${txTableHTML(mTx.filter(t=>monthKey(t.date)===monthKey(currentMonth)))}</div>
+  `;
+  setTimeout(()=>{
+    const iData=months.map(mn=>yTx.filter(t=>t.type==='income'&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
+    const oeData=months.map(mn=>yTx.filter(t=>(t.type==='expense'||t.type==='debt')&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
+    const ctx=document.getElementById(canvasId);if(!ctx)return;
+    const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
+    new Chart(ctx,{type:'line',data:{labels:months.map(mn=>mn.toLocaleDateString('th-TH',{month:'short'})),datasets:[{label:'รายรับ',data:iData,borderColor:m.color,backgroundColor:m.color+'22',fill:true,tension:.4,pointRadius:3},{label:'รายจ่าย+หนี้',data:oeData,borderColor:'#ff5f6d',backgroundColor:'rgba(255,95,109,.07)',fill:true,tension:.4,pointRadius:3}]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},...cOpts2,animation:{duration:500}}});
+  },50);
+}
+
+// Recurring CRUD
+function openRecurModal(memberId){
+  selectedRecTags=[];
+  const sel=document.getElementById('recMember');
+  sel.innerHTML=db.members.map(m=>`<option value="${m.id}" ${m.id==memberId?'selected':''}>${m.name}</option>`).join('');
+  ['recName','recAmount','recDueDay'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('recTagSelector').innerHTML=db.tags.map(tag=>`<span class="tag-opt" onclick="toggleRecTag(${tag.id})" style="color:${tag.color}">${tag.emoji}${tag.name}</span>`).join('');
+  document.getElementById('recurModal').classList.add('open');
+}
+function closeRecurModal(){document.getElementById('recurModal').classList.remove('open');}
+function toggleRecTag(id){
+  selectedRecTags=selectedRecTags.includes(id)?selectedRecTags.filter(t=>t!==id):[...selectedRecTags,id];
+  document.getElementById('recTagSelector').querySelectorAll('.tag-opt').forEach(el=>{
+    const m=el.getAttribute('onclick').match(/\d+/);const tid=m?parseInt(m[0]):0;
+    el.classList.toggle('selected',selectedRecTags.includes(tid));
+    if(selectedRecTags.includes(tid)){el.style.borderColor=el.style.color;el.style.background='var(--green-dim)';}
+    else{el.style.borderColor='var(--border)';el.style.background='var(--surface2)';}
+  });
+}
+async function saveRecurring(){
+  const name=document.getElementById('recName').value.trim();
+  const amount=parseFloat(document.getElementById('recAmount').value);
+  const dueDay=parseInt(document.getElementById('recDueDay').value)||0;
+  const memberId=parseInt(document.getElementById('recMember').value);
+  const type=document.getElementById('recType').value;
+  if(!name||!amount){toast('กรุณากรอกชื่อและจำนวนเงิน','error');return;}
+  const id=Number(db.config.nextRecId||10);
+  const r={id,name,amount,dueDay,memberId,type,tags:[...selectedRecTags]};
+  db.recurring.push(r);db.config.nextRecId=id+1;
+  try{await gsPost({action:'saveRecurring',recurring:r});await gsPost({action:'saveConfig',config:{nextRecId:db.config.nextRecId}});setSyncBadge('ok');toast('เพิ่มรายการประจำแล้ว ✓');}
+  catch(e){toast('บันทึกล้มเหลว','error');}
+  closeRecurModal();renderMembersPage();
+}
+async function deleteRecurring(id){
+  if(!confirm('ลบรายการประจำนี้?'))return;
+  db.recurring=db.recurring.filter(r=>r.id!==id);
+  try{await gsPost({action:'deleteRecurring',id});toast('ลบแล้ว','error');}catch(e){}
+  renderMembersPage();
+}
+
+// ── CREDIT CARD PAGE ──
+function renderCreditCard(){
+  const year=currentMonth.getFullYear();
+  const months=allMonthsOfYear(year);
+  const c=document.getElementById('ccContent');
+  if(!c)return;
+  if(!db.creditCards||!db.creditCards.length){c.innerHTML=`<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-text">ยังไม่มีบัตรเครดิต — ไปที่ ⚙️ ตั้งค่า เพื่อเพิ่มบัตร</div></div>`;return;}
+  const getCC_=id=>db.creditCards.find(c=>c.id==id);
+  const ccCardsHTML=db.creditCards.map(cc=>{
+    const ccTx=db.transactions.filter(t=>t.ccId==cc.id&&t.type==='expense'&&new Date(t.date).getFullYear()===year);
+    const totalYear=ccTx.reduce((s,t)=>s+t.amount,0);
+    const mTotals={};months.forEach(mn=>{const mk=monthKey(mn);mTotals[mk]=ccTx.filter(t=>monthKey(t.date)===mk).reduce((s,t)=>s+t.amount,0);});
+    const groups={};ccTx.forEach(t=>{const k=t.desc;if(!groups[k])groups[k]={months:{}};groups[k].months[monthKey(t.date)]=(groups[k].months[monthKey(t.date)]||0)+t.amount;});
+    return`<div class="cc-card">
+      <div class="cc-header">
+        <div><div class="cc-name">💳 ${cc.name}</div><div class="cc-bank">${cc.bank}${cc.limit?` · วงเงิน ฿${fmt(cc.limit)}`:''}</div></div>
+        <div style="text-align:right"><div style="font-size:10px;color:var(--text3)">ใช้ปีนี้</div><div style="font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--red)">฿${fmt(totalYear)}</div></div>
+      </div>
+      <div class="cc-table-wrap"><table class="cc-table">
+        <thead><tr><th class="left">รายการ</th>${months.map(mn=>`<th>${mn.toLocaleDateString('th-TH',{month:'short'})}</th>`).join('')}<th>รวม</th></tr></thead>
+        <tbody>
+          ${Object.entries(groups).map(([desc,g])=>{const tot=Object.values(g.months).reduce((s,v)=>s+v,0);return`<tr><td class="left">${desc}</td>${months.map(mn=>`<td>${g.months[monthKey(mn)]?`฿${fmt(g.months[monthKey(mn)])}`:'-'}</td>`).join('')}<td class="highlight">฿${fmt(tot)}</td></tr>`;}).join('')}
+          <tr class="cc-total-row"><td class="left">รวม</td>${months.map(mn=>`<td class="highlight">฿${fmt(mTotals[monthKey(mn)])}</td>`).join('')}<td class="highlight">฿${fmt(totalYear)}</td></tr>
+        </tbody>
+      </table></div>
+    </div>`;
+  }).join('');
+
+  const periodCCTx=db.transactions.filter(t=>t.ccId&&t.type==='expense'&&monthKey(t.date)===monthKey(currentMonth));
+  const tagBarId='ccTagBar';
+  c.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:600">บัตรเครดิต ปี ${year+543}</div>
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ บันทึกค่าใช้จ่ายบัตร</button>
+    </div>
+    ${ccCardsHTML}
+    <div class="chart-card" style="margin-bottom:14px">
+      <div class="chart-title">📊 ค่าใช้จ่ายบัตรเครดิตแยกตาม Tag — ${monthLabel(currentMonth)}</div>
+      <div class="chart-wrap tall"><canvas id="${tagBarId}"></canvas></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><div class="table-title">รายการบัตรเครดิต — ${monthLabel(currentMonth)}</div></div>
+      ${txTableHTML(periodCCTx)}
+    </div>
+  `;
+  setTimeout(()=>{
+    if(chartInstances.ccTag){chartInstances.ccTag.destroy();chartInstances.ccTag=null;}
+    const tagMap={};
+    periodCCTx.forEach(tx=>{if(tx.tags&&tx.tags.length)tx.tags.forEach(tid=>{const tag=getTag(tid);if(tag){if(!tagMap[tag.name])tagMap[tag.name]={color:tag.color,total:0};tagMap[tag.name].total+=tx.amount/tx.tags.length;}});else{if(!tagMap['ไม่ระบุ'])tagMap['ไม่ระบุ']={color:'#666',total:0};tagMap['ไม่ระบุ'].total+=tx.amount;}});
+    const L=Object.keys(tagMap),D=L.map(k=>tagMap[k].total),colors=L.map(k=>tagMap[k].color);
+    const ctx=document.getElementById(tagBarId);if(!ctx)return;
+    const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
+    chartInstances.ccTag=new Chart(ctx,{type:'bar',data:{labels:L,datasets:[{label:'ค่าใช้จ่าย',data:D,backgroundColor:colors.map(co=>co+'88'),borderColor:colors,borderWidth:1,borderRadius:5}]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},...cOpts2,animation:{duration:500}}});
+  },50);
+}
+
+// ── PATCH renderSettings with CC section ──
+function renderSettings(){
+  const ccList=document.getElementById('ccCardList');
+  if(ccList&&db.creditCards)ccList.innerHTML=db.creditCards.map(cc=>`
+    <div class="member-item">
+      <div class="member-info"><div class="member-avatar-lg" style="background:${cc.color}22;color:${cc.color}">💳</div><div><div class="member-name">${cc.name}</div><div class="member-role">${cc.bank}${cc.limit?` · ฿${fmt(cc.limit)}`:''}  </div></div></div>
+      <button onclick="deleteCreditCard(${cc.id})" class="btn btn-danger btn-sm">ลบ</button>
+    </div>`).join('');
+}
+async function addCreditCard(){
+  const name=document.getElementById('newCCName').value.trim();const bank=document.getElementById('newCCBank').value.trim();const limit=parseFloat(document.getElementById('newCCLimit').value)||0;
+  if(!name)return;
+  const color=COLORS[db.creditCards.length%COLORS.length];const id=Number(db.config.nextCCId||10);
+  const cc={id,name,bank,limit,color};db.creditCards.push(cc);db.config.nextCCId=id+1;
+  setSyncBadge('syncing');
+  try{await gsPost({action:'saveCreditCard',creditCard:cc});await gsPost({action:'saveConfig',config:{nextCCId:db.config.nextCCId}});setSyncBadge('ok');toast('เพิ่มบัตรแล้ว ✓');}
+  catch(e){setSyncBadge('err');toast('บันทึกล้มเหลว','error');}
+  document.getElementById('newCCName').value='';document.getElementById('newCCBank').value='';document.getElementById('newCCLimit').value='';
+  renderSettings();
+}
+async function deleteCreditCard(id){
+  if(!confirm('ลบบัตรนี้?'))return;
+  db.creditCards=db.creditCards.filter(c=>c.id!==id);
+  try{await gsPost({action:'deleteCreditCard',id});setSyncBadge('ok');toast('ลบบัตรแล้ว','error');}catch(e){setSyncBadge('err');}
+  renderSettings();
+}
+
+// updateDashMemberFilter is called inside applyData patch
+
 </script>
 </body>
 </html>
