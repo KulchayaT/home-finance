@@ -553,9 +553,13 @@ function setSyncBadge(state,msg){
 //  GOOGLE APPS SCRIPT API
 // ════════════════════════════════════════════════
 async function gsGet(params){
-  const qs=Object.entries(params).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
-  const url=gsUrl+(gsUrl.includes('?')?'&':'?')+qs;
-  const res=await fetch(url,{method:'GET',redirect:'follow'});
+  // Use POST to avoid CORS redirect issues with Google Apps Script
+  const res=await fetch(gsUrl,{
+    method:'POST',
+    redirect:'follow',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(params)
+  });
   if(!res.ok) throw new Error('HTTP '+res.status);
   return res.json();
 }
@@ -578,7 +582,12 @@ async function setupConnect(){
   msgEl.style.color='var(--text2)';
   try{
     gsUrl=url;
-    const res=await fetch(gsUrl+'?action=ping');
+    const res=await fetch(gsUrl,{
+      method:'POST',
+      redirect:'follow',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'ping'})
+    });
     if(!res.ok) throw new Error('HTTP '+res.status);
     const ping=await res.json();
     if(!ping||ping.ok!==true) throw new Error((ping&&ping.message)||'Apps Script ตอบกลับผิดปกติ');
@@ -958,7 +967,8 @@ function changeMonth(d){
 
 // ── PATCH openAddModal ──
 function openAddModal(id){
-  editingId=id||null;const tx=id?db.transactions.find(t=>t.id==id):null;
+  editingId=id||null;
+  const tx=id?db.transactions.find(t=>t.id==id):null;
   document.getElementById('modalTitle').textContent=tx?'แก้ไขรายการ':'เพิ่มรายการใหม่';
   setType(tx?tx.type:'expense');
   document.getElementById('txDate').value=tx?tx.date:new Date().toISOString().split('T')[0];
@@ -969,9 +979,13 @@ function openAddModal(id){
   selectedTags=tx?[...(tx.tags||[])]:[];
   const sel=document.getElementById('txMember');
   sel.innerHTML=db.members.map(m=>`<option value="${m.id}" ${m.id==(tx&&tx.memberId)?'selected':''}>${m.name}</option>`).join('');
-  const tx=id?db.transactions.find(t=>t.id==id):null;
   const ccSel=document.getElementById('txCC');
-  if(ccSel){ccSel.innerHTML='<option value="">-- ไม่ระบุ --</option>'+db.creditCards.map(c=>`<option value="${c.id}" ${c.id==(tx&&tx.ccId)?'selected':''}>${c.name} (${c.bank})</option>`).join('');}
+  if(ccSel){
+    const cards=db.creditCards||[];
+    ccSel.innerHTML='<option value="">-- ไม่ระบุ --</option>'+cards.map(c=>`<option value="${c.id}" ${c.id==(tx&&tx.ccId)?'selected':''}>${c.name} (${c.bank})</option>`).join('');
+  }
+  renderTagSelector();
+  document.getElementById('txModal').classList.add('open');
 }
 
 // ── PATCH setType ──
