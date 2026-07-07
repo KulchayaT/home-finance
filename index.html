@@ -261,6 +261,26 @@ td.right{text-align:right}
 .cc-total-row td{font-weight:700;border-top:2px solid var(--border)}
 @media(max-width:900px){.income-split-grid{grid-template-columns:1fr}.cc-grid{grid-template-columns:1fr}}
 
+
+/* Editable annual plan */
+.plan-input{background:var(--surface2);border:1px solid transparent;border-radius:4px;padding:3px 5px;color:var(--text);font-size:11px;font-family:'Space Mono',monospace;width:90px;text-align:right;transition:border-color .15s}
+.plan-input:focus{border-color:var(--accent);outline:none;background:var(--surface3)}
+.plan-input:hover{border-color:var(--border)}
+.plan-row-add{display:flex;gap:6px;padding:8px 12px;background:var(--surface2);border-top:1px solid var(--border);align-items:center;flex-wrap:wrap}
+.plan-row-add input{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 9px;color:var(--text);font-size:11px;font-family:inherit;outline:none}
+.plan-row-add input:focus{border-color:var(--accent)}
+/* CC Statement table */
+.cc-stmt-table{width:100%;border-collapse:collapse;font-size:12px}
+.cc-stmt-table th{text-align:right;padding:8px 10px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);background:var(--surface2);white-space:nowrap}
+.cc-stmt-table th.left{text-align:left}
+.cc-stmt-table td{padding:7px 10px;border-top:1px solid var(--border);text-align:right}
+.cc-stmt-table td.left{text-align:left;font-weight:500}
+.cc-stmt-table tr:hover td{background:var(--surface2)}
+.cc-stmt-input{background:var(--surface2);border:1px solid transparent;border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;font-family:'Space Mono',monospace;width:100px;text-align:right;transition:border-color .15s}
+.cc-stmt-input:focus{border-color:var(--accent);outline:none}
+.cc-stmt-input:hover{border-color:var(--border)}
+.cc-total-row td{font-weight:700;color:var(--accent);border-top:2px solid var(--border) !important}
+.recur-total{display:flex;justify-content:flex-end;padding:10px 12px;border-top:2px solid var(--border);font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--red)}
 </style>
 </head>
 <body>
@@ -513,7 +533,7 @@ const DEFAULT_TAGS = [
 ];
 
 let gsUrl = '';
-let db = { transactions:[], members:[], tags:[], config:{ nextTxId:1, nextMemberId:10, nextTagId:20 } };
+let db = { transactions:[], members:[], tags:[], creditCards:[], recurring:[], planData:{}, ccStatements:{}, config:{ nextTxId:1, nextMemberId:10, nextTagId:20, nextCCId:10, nextRecId:10 } };
 let currentMonth = new Date();
 let editingId = null;
 let currentType = 'income';
@@ -919,6 +939,8 @@ function applyData(data){
   db.members=(data.members||DEFAULT_MEMBERS).map(m=>({...m,id:Number(m.id)||m.id}));
   db.tags=(data.tags||DEFAULT_TAGS).map(t=>({...t,id:Number(t.id)||t.id}));
   db.config=data.config||{nextTxId:1,nextMemberId:10,nextTagId:20,nextCCId:10,nextRecId:10};
+  db.planData=data.planData||{};
+  db.ccStatements=data.ccStatements||{};
   db.creditCards=(data.creditCards||DEFAULT_CC).map(c=>({...c,id:Number(c.id)||c.id,limit:Number(c.limit)||0}));
   db.recurring=(data.recurring||[]).map(r=>({...r,id:Number(r.id)||r.id,amount:Number(r.amount)||0,dueDay:Number(r.dueDay)||1,tags:Array.isArray(r.tags)?r.tags.map(Number).filter(Boolean):[]}));
   db.members=(data.members||db.members).map(m=>({...m,id:Number(m.id)||m.id}));
@@ -1037,7 +1059,11 @@ function txTableHTML(txs,limit){
   const sorted=[...txs].sort((a,b)=>new Date(b.date)-new Date(a.date));
   const shown=limit?sorted.slice(0,limit):sorted;
   if(!shown.length)return`<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">ยังไม่มีรายการ</div></div>`;
-  const getCC_=id=>db.creditCards.find(c=>c.id==id);
+  const getCC_=id=>(db.creditCards||[]).find(c=>c.id==id);
+  const totalInc=shown.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const totalExp=shown.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const totalDbt=shown.filter(t=>t.type==='debt').reduce((s,t)=>s+t.amount,0);
+  const limitNote=limit&&sorted.length>limit?` (แสดง ${limit}/${sorted.length})`:'';
   return`<div style="overflow-x:auto"><table>
     <thead><tr><th>วันที่</th><th>รายละเอียด</th><th>สมาชิก</th><th>Tag</th>
       <th class="right" style="color:var(--green)">รายรับ</th>
@@ -1063,7 +1089,15 @@ function txTableHTML(txs,limit){
           <button onclick="deleteTransaction(${tx.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;padding:2px 4px">🗑️</button>
         </td>
       </tr>`;
-    }).join('')}</tbody></table></div>`;
+    }).join('')}</tbody>
+    <tfoot><tr style="background:var(--surface3)">
+      <td colspan="4" style="padding:9px 12px;font-size:11px;font-weight:700;color:var(--text2)">รวม${limitNote}</td>
+      <td style="padding:9px 12px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--green);text-align:right">+฿${fmt(totalInc)}</td>
+      <td style="padding:9px 12px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--red);text-align:right">-฿${fmt(totalExp)}</td>
+      <td style="padding:9px 12px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--yellow);text-align:right">-฿${fmt(totalDbt)}</td>
+      <td></td>
+    </tr></tfoot>
+    </table></div>`;
 }
 
 // ── PATCH renderDashboard ──
@@ -1233,29 +1267,57 @@ function renderMemberDetail(memberId){
   const exp=yTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
   const dbt=yTx.filter(t=>t.type==='debt').reduce((s,t)=>s+t.amount,0);
   const monthHeaders=months.map(mn=>`<th>${mn.toLocaleDateString('th-TH',{month:'short'})}</th>`).join('');
-  function annualTable(type,label,color){
-    const typeTx=yTx.filter(t=>t.type===type);
-    const groups={};typeTx.forEach(t=>{const k=t.desc+(t.source?'|'+t.source:'');if(!groups[k])groups[k]={label:t.desc,sub:t.source||'',months:{}};groups[k].months[monthKey(t.date)]=(groups[k].months[monthKey(t.date)]||0)+t.amount;});
-    if(!Object.keys(groups).length)return`<div style="font-size:11px;color:var(--text3);padding:8px 0">ยังไม่มีรายการ</div>`;
-    const totals={};months.forEach(mn=>{const mk=monthKey(mn);totals[mk]=Object.values(groups).reduce((s,g)=>s+(g.months[mk]||0),0);});
+  const mid=memberId;
+
+  // Editable annual plan table
+  function editablePlanTable(type,label,color){
+    const planRows=((db.planData[mid]||{})[type])||{};
+    const allRows=Object.values(planRows);
+    const totals={};months.forEach(mn=>{const mk=monthKey(mn);totals[mk]=allRows.reduce((s,r)=>s+(r.months[mk]||0),0);});
+    const grandTotal=Object.values(totals).reduce((s,v)=>s+v,0);
+    const rowsHTML=allRows.map(row=>`
+      <tr>
+        <td class="label-col" style="display:flex;align-items:center;gap:6px">
+          <span>${row.label}</span>
+          <button onclick="deletePlanRow(${mid},'${type}','${row.label}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:10px;padding:0">✕</button>
+        </td>
+        ${months.map(mn=>{const mk=monthKey(mn);return`<td><input class="plan-input" type="number" value="${row.months[mk]||''}" placeholder="0" onchange="savePlanRow(${mid},'${type}','${row.label}','${mk}',this.value)" onblur="renderMemberDetail(${mid})"/></td>`;}).join('')}
+        <td style="color:${color};font-weight:700;font-family:'Space Mono',monospace;font-size:11px">฿${fmt(Object.values(row.months).reduce((s,v)=>s+v,0))}</td>
+      </tr>`).join('');
     return`<div style="overflow-x:auto"><table class="annual-table">
       <thead><tr><th class="label-col">${label}</th>${monthHeaders}<th>รวม</th></tr></thead>
-      <tbody>${Object.values(groups).map(g=>{const total=Object.values(g.months).reduce((s,v)=>s+v,0);return`<tr><td class="label-col"><div>${g.label}</div>${g.sub?`<div style="font-size:9px;color:var(--text3)">${g.sub}</div>`:''}</td>${months.map(mn=>`<td>${g.months[monthKey(mn)]?`<span style="color:${color}">฿${fmt(g.months[monthKey(mn)])}</span>`:'-'}</td>`).join('')}<td style="color:${color};font-weight:700">฿${fmt(total)}</td></tr>`;}).join('')}
-      <tr class="total-row"><td class="label-col">รวม</td>${months.map(mn=>`<td>฿${fmt(totals[monthKey(mn)])}</td>`).join('')}<td>฿${fmt(Object.values(totals).reduce((s,v)=>s+v,0))}</td></tr></tbody></table></div>`;
+      <tbody>${rowsHTML}
+        <tr style="background:var(--surface3)"><td class="label-col" style="font-weight:700;color:var(--accent)">รวม</td>${months.map(mn=>`<td style="color:${color};font-weight:700">฿${fmt(totals[monthKey(mn)])}</td>`).join('')}<td style="color:${color};font-weight:700">฿${fmt(grandTotal)}</td></tr>
+      </tbody>
+      </table></div>
+      <div class="plan-row-add">
+        <span style="font-size:11px;color:var(--text3)">+ เพิ่มแถว:</span>
+        <input id="planAdd_${mid}_${type}" placeholder="ชื่อรายการ" style="flex:1;min-width:120px"/>
+        <button class="btn btn-primary btn-sm" onclick="addPlanRow(${mid},'${type}','planAdd_${mid}_${type}')">+ เพิ่ม</button>
+      </div>`;
   }
+
+  // Recurring with total
   const myRecurring=db.recurring.filter(r=>r.memberId==memberId);
   const today=new Date().getDate();
+  const recurTotal=myRecurring.reduce((s,r)=>s+r.amount,0);
   const recurHTML=myRecurring.length?myRecurring.map(r=>{
     const soon=r.dueDay&&Math.abs(r.dueDay-today)<=3;
     return`<div class="recurring-item"><div class="recurring-info"><div class="recurring-name">${r.name}</div><div class="recurring-meta">${(r.tags||[]).map(tid=>{const tag=getTag(tid);return tag?`${tag.emoji}${tag.name}`:''}).join(' · ')}</div></div><div style="display:flex;align-items:center;gap:8px"><div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--red)">฿${fmt(r.amount)}</div>${r.dueDay?`<span class="due-badge ${soon?'soon':''}">วันที่ ${r.dueDay}</span>`:''}<button onclick="deleteRecurring(${r.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px">🗑️</button></div></div>`;
   }).join(''):`<div style="font-size:12px;color:var(--text3);padding:10px 0">ยังไม่มีรายการประจำ</div>`;
+
   const canvasId='mLineChart'+memberId;
   document.getElementById('memberContent').innerHTML=`
     <div class="member-detail-card">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
         <div class="member-avatar-xl" style="background:${m.color}22;color:${m.color}">${m.name[0]}</div>
         <div><div style="font-size:17px;font-weight:700">${m.name}</div><div style="font-size:11px;color:var(--text3)">${m.role}</div>
-          <div class="member-stats"><div class="mstat">รายรับ<span style="color:var(--green)">฿${fmt(inc)}</span></div><div class="mstat">รายจ่าย<span style="color:var(--red)">฿${fmt(exp)}</span></div><div class="mstat">หนี้สิน<span style="color:var(--yellow)">฿${fmt(dbt)}</span></div><div class="mstat">คงเหลือ<span style="color:var(--blue)">฿${fmt(inc-exp-dbt)}</span></div></div>
+          <div class="member-stats">
+            <div class="mstat">รายรับ<span style="color:var(--green)">฿${fmt(inc)}</span></div>
+            <div class="mstat">รายจ่าย<span style="color:var(--red)">฿${fmt(exp)}</span></div>
+            <div class="mstat">หนี้สิน<span style="color:var(--yellow)">฿${fmt(dbt)}</span></div>
+            <div class="mstat">คงเหลือ<span style="color:var(--blue)">฿${fmt(inc-exp-dbt)}</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1263,21 +1325,40 @@ function renderMemberDetail(memberId){
       <div class="chart-title">📈 รายรับ vs รายจ่าย+หนี้สิน (${year+543})</div>
       <div class="chart-wrap tall"><canvas id="${canvasId}"></canvas></div>
     </div>
-    <div class="table-card" style="margin-bottom:14px"><div class="table-header"><div class="table-title">📥 แผนรายรับ ปี ${year+543}</div></div><div style="padding:14px">${annualTable('income','รายรับ','var(--green)')}</div></div>
-    <div class="table-card" style="margin-bottom:14px"><div class="table-header"><div class="table-title">📤 แผนรายจ่าย ปี ${year+543}</div></div><div style="padding:14px">${annualTable('expense','รายจ่าย','var(--red)')}</div></div>
-    <div class="table-card" style="margin-bottom:14px"><div class="table-header"><div class="table-title">💸 แผนหนี้สิน ปี ${year+543}</div></div><div style="padding:14px">${annualTable('debt','หนี้สิน','var(--yellow)')}</div></div>
     <div class="table-card" style="margin-bottom:14px">
-      <div class="table-header"><div class="table-title">📅 รายการจ่ายประจำ</div><button class="btn btn-primary btn-sm" onclick="openRecurModal(${memberId})">+ เพิ่ม</button></div>
-      <div style="padding:12px">${recurHTML}</div>
+      <div class="table-header"><div class="table-title">📥 แผนรายรับ ปี ${year+543} <small style="color:var(--text3);font-size:10px">(กรอกแผน/ประมาณการ)</small></div></div>
+      <div style="padding:14px">${editablePlanTable('income','รายรับ','var(--green)')}</div>
     </div>
-    <div class="table-card"><div class="table-header"><div class="table-title">รายการ ${monthLabel(currentMonth)}</div></div>${txTableHTML(mTx.filter(t=>monthKey(t.date)===monthKey(currentMonth)))}</div>
+    <div class="table-card" style="margin-bottom:14px">
+      <div class="table-header"><div class="table-title">📤 แผนรายจ่าย ปี ${year+543} <small style="color:var(--text3);font-size:10px">(กรอกแผน/ประมาณการ)</small></div></div>
+      <div style="padding:14px">${editablePlanTable('expense','รายจ่าย','var(--red)')}</div>
+    </div>
+    <div class="table-card" style="margin-bottom:14px">
+      <div class="table-header"><div class="table-title">💸 แผนหนี้สิน ปี ${year+543} <small style="color:var(--text3);font-size:10px">(กรอกแผน/ประมาณการ)</small></div></div>
+      <div style="padding:14px">${editablePlanTable('debt','หนี้สิน','var(--yellow)')}</div>
+    </div>
+    <div class="table-card" style="margin-bottom:14px">
+      <div class="table-header">
+        <div class="table-title">📅 รายการจ่ายประจำ <small style="color:var(--text3);font-size:10px">รวม ฿${fmt(recurTotal)}/เดือน</small></div>
+        <button class="btn btn-primary btn-sm" onclick="openRecurModal(${memberId})">+ เพิ่ม</button>
+      </div>
+      <div style="padding:12px">${recurHTML}</div>
+      ${myRecurring.length?`<div class="recur-total">รวมทั้งหมด: ฿${fmt(recurTotal)}/เดือน</div>`:''}
+    </div>
+    <div class="table-card">
+      <div class="table-header"><div class="table-title">รายการจริง ${monthLabel(currentMonth)}</div></div>
+      ${txTableHTML(mTx.filter(t=>monthKey(t.date)===monthKey(currentMonth)))}
+    </div>
   `;
   setTimeout(()=>{
     const iData=months.map(mn=>yTx.filter(t=>t.type==='income'&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
     const oeData=months.map(mn=>yTx.filter(t=>(t.type==='expense'||t.type==='debt')&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
     const ctx=document.getElementById(canvasId);if(!ctx)return;
     const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
-    new Chart(ctx,{type:'line',data:{labels:months.map(mn=>mn.toLocaleDateString('th-TH',{month:'short'})),datasets:[{label:'รายรับ',data:iData,borderColor:m.color,backgroundColor:m.color+'22',fill:true,tension:.4,pointRadius:3},{label:'รายจ่าย+หนี้',data:oeData,borderColor:'#ff5f6d',backgroundColor:'rgba(255,95,109,.07)',fill:true,tension:.4,pointRadius:3}]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},...cOpts2,animation:{duration:500}}});
+    new Chart(ctx,{type:'line',data:{labels:months.map(mn=>mn.toLocaleDateString('th-TH',{month:'short'})),datasets:[
+      {label:'รายรับ',data:iData,borderColor:m.color,backgroundColor:m.color+'22',fill:true,tension:.4,pointRadius:3},
+      {label:'รายจ่าย+หนี้',data:oeData,borderColor:'#ff5f6d',backgroundColor:'rgba(255,95,109,.07)',fill:true,tension:.4,pointRadius:3}
+    ]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},...cOpts2,animation:{duration:500}}});
   },50);
 }
 
@@ -1327,36 +1408,71 @@ function renderCreditCard(){
   const months=allMonthsOfYear(year);
   const c=document.getElementById('ccContent');
   if(!c)return;
-  if(!db.creditCards||!db.creditCards.length){c.innerHTML=`<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-text">ยังไม่มีบัตรเครดิต — ไปที่ ⚙️ ตั้งค่า เพื่อเพิ่มบัตร</div></div>`;return;}
-  const getCC_=id=>db.creditCards.find(c=>c.id==id);
-  const ccCardsHTML=db.creditCards.map(cc=>{
-    const ccTx=db.transactions.filter(t=>t.ccId==cc.id&&t.type==='expense'&&new Date(t.date).getFullYear()===year);
-    const totalYear=ccTx.reduce((s,t)=>s+t.amount,0);
-    const mTotals={};months.forEach(mn=>{const mk=monthKey(mn);mTotals[mk]=ccTx.filter(t=>monthKey(t.date)===mk).reduce((s,t)=>s+t.amount,0);});
-    const groups={};ccTx.forEach(t=>{const k=t.desc;if(!groups[k])groups[k]={months:{}};groups[k].months[monthKey(t.date)]=(groups[k].months[monthKey(t.date)]||0)+t.amount;});
-    return`<div class="cc-card">
+  if(!db.creditCards||!db.creditCards.length){
+    c.innerHTML=`<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-text">ยังไม่มีบัตรเครดิต — ไปที่ ⚙️ ตั้งค่า เพื่อเพิ่มบัตร</div></div>`;return;
+  }
+
+  // Statement table per card (editable)
+  function stmtTable(cc){
+    const cid=cc.id;
+    const dueDay=cc.dueDay||0;
+    const rows=[
+      {field:'balance',label:'ยอดคงเหลือทั้งหมด',color:'var(--red)'},
+      {field:'newSpend',label:'รายจ่ายเดือนนี้',color:'var(--orange)'},
+      {field:'interest',label:'ดอกเบี้ย',color:'var(--yellow)'},
+      {field:'minPay',label:'ขั้นต่ำ',color:'var(--text2)'},
+      {field:'paid',label:'จ่ายแล้ว',color:'var(--green)'},
+    ];
+    const mHeader=months.map(mn=>`<th>${mn.toLocaleDateString('th-TH',{month:'short'})}</th>`).join('');
+    const rowsHTML=rows.map(r=>`
+      <tr>
+        <td class="left" style="color:${r.color};font-weight:600">${r.label}</td>
+        ${months.map(mn=>{const mk=monthKey(mn);const val=ccStmtVal(cid,mk,r.field);return`<td><input class="cc-stmt-input" type="number" value="${val||''}" placeholder="0" onchange="saveCCStmt(${cid},'${mk}','${r.field}',this.value)"/></td>`;}).join('')}
+      </tr>`).join('');
+    // Net row (paid - balance)
+    const netHTML=`<tr style="background:var(--surface3)">
+      <td class="left" style="font-weight:700;color:var(--accent)">คงเหลือหลังจ่าย</td>
+      ${months.map(mn=>{const mk=monthKey(mn);const net=ccStmtVal(cid,mk,'balance')-ccStmtVal(cid,mk,'paid');return`<td style="font-family:'Space Mono',monospace;font-weight:700;color:${net>0?'var(--red)':'var(--green)'}">฿${fmt(net)}</td>`;}).join('')}
+    </tr>`;
+    return`<div class="cc-card" style="margin-bottom:16px">
       <div class="cc-header">
-        <div><div class="cc-name">💳 ${cc.name}</div><div class="cc-bank">${cc.bank}${cc.limit?` · วงเงิน ฿${fmt(cc.limit)}`:''}</div></div>
-        <div style="text-align:right"><div style="font-size:10px;color:var(--text3)">ใช้ปีนี้</div><div style="font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--red)">฿${fmt(totalYear)}</div></div>
+        <div>
+          <div class="cc-name">💳 ${cc.name}</div>
+          <div class="cc-bank">${cc.bank}${cc.limit?` · วงเงิน ฿${fmt(cc.limit)}`:''}${dueDay?` · ครบกำหนดวันที่ ${dueDay}`:''}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--text3)">ยอดปัจจุบัน</div>
+          <div style="font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--red)">฿${fmt(ccStmtVal(cid,monthKey(currentMonth),'balance'))}</div>
+        </div>
       </div>
-      <div class="cc-table-wrap"><table class="cc-table">
-        <thead><tr><th class="left">รายการ</th>${months.map(mn=>`<th>${mn.toLocaleDateString('th-TH',{month:'short'})}</th>`).join('')}<th>รวม</th></tr></thead>
-        <tbody>
-          ${Object.entries(groups).map(([desc,g])=>{const tot=Object.values(g.months).reduce((s,v)=>s+v,0);return`<tr><td class="left">${desc}</td>${months.map(mn=>`<td>${g.months[monthKey(mn)]?`฿${fmt(g.months[monthKey(mn)])}`:'-'}</td>`).join('')}<td class="highlight">฿${fmt(tot)}</td></tr>`;}).join('')}
-          <tr class="cc-total-row"><td class="left">รวม</td>${months.map(mn=>`<td class="highlight">฿${fmt(mTotals[monthKey(mn)])}</td>`).join('')}<td class="highlight">฿${fmt(totalYear)}</td></tr>
-        </tbody>
+      <div style="padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--text3)">ครบกำหนดวันที่:</span>
+          <input type="number" value="${cc.dueDay||''}" placeholder="วันที่ 1-31" min="1" max="31"
+            style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px;width:80px"
+            onchange="updateCCDueDay(${cid},this.value)"/>
+          <span style="font-size:11px;color:var(--text3)">ของทุกเดือน</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table class="cc-stmt-table">
+        <thead><tr><th class="left" style="min-width:160px">รายการ</th>${mHeader}</tr></thead>
+        <tbody>${rowsHTML}${netHTML}</tbody>
       </table></div>
     </div>`;
-  }).join('');
+  }
 
+  const stmtHTML=db.creditCards.map(stmtTable).join('');
+
+  // Summary usage from transactions
   const periodCCTx=db.transactions.filter(t=>t.ccId&&t.type==='expense'&&monthKey(t.date)===monthKey(currentMonth));
   const tagBarId='ccTagBar';
+
   c.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div style="font-size:14px;font-weight:600">บัตรเครดิต ปี ${year+543}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:14px;font-weight:600">💳 บัตรเครดิต ปี ${year+543}</div>
       <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ บันทึกค่าใช้จ่ายบัตร</button>
     </div>
-    ${ccCardsHTML}
+    ${stmtHTML}
     <div class="chart-card" style="margin-bottom:14px">
       <div class="chart-title">📊 ค่าใช้จ่ายบัตรเครดิตแยกตาม Tag — ${monthLabel(currentMonth)}</div>
       <div class="chart-wrap tall"><canvas id="${tagBarId}"></canvas></div>
@@ -1366,15 +1482,27 @@ function renderCreditCard(){
       ${txTableHTML(periodCCTx)}
     </div>
   `;
+
   setTimeout(()=>{
     if(chartInstances.ccTag){chartInstances.ccTag.destroy();chartInstances.ccTag=null;}
     const tagMap={};
-    periodCCTx.forEach(tx=>{if(tx.tags&&tx.tags.length)tx.tags.forEach(tid=>{const tag=getTag(tid);if(tag){if(!tagMap[tag.name])tagMap[tag.name]={color:tag.color,total:0};tagMap[tag.name].total+=tx.amount/tx.tags.length;}});else{if(!tagMap['ไม่ระบุ'])tagMap['ไม่ระบุ']={color:'#666',total:0};tagMap['ไม่ระบุ'].total+=tx.amount;}});
+    periodCCTx.forEach(tx=>{
+      if(tx.tags&&tx.tags.length)tx.tags.forEach(tid=>{const tag=getTag(tid);if(tag){if(!tagMap[tag.name])tagMap[tag.name]={color:tag.color,total:0};tagMap[tag.name].total+=tx.amount/tx.tags.length;}});
+      else{if(!tagMap['ไม่ระบุ'])tagMap['ไม่ระบุ']={color:'#666',total:0};tagMap['ไม่ระบุ'].total+=tx.amount;}
+    });
     const L=Object.keys(tagMap),D=L.map(k=>tagMap[k].total),colors=L.map(k=>tagMap[k].color);
     const ctx=document.getElementById(tagBarId);if(!ctx)return;
     const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
     chartInstances.ccTag=new Chart(ctx,{type:'bar',data:{labels:L,datasets:[{label:'ค่าใช้จ่าย',data:D,backgroundColor:colors.map(co=>co+'88'),borderColor:colors,borderWidth:1,borderRadius:5}]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},...cOpts2,animation:{duration:500}}});
   },50);
+}
+
+async function updateCCDueDay(ccId,val){
+  const cc=db.creditCards.find(c=>c.id==ccId);
+  if(!cc)return;
+  cc.dueDay=parseInt(val)||0;
+  try{await gsPost({action:'saveCreditCard',creditCard:cc});setSyncBadge('ok');}
+  catch(e){setSyncBadge('err');}
 }
 
 // ── PATCH renderSettings with CC section ──
@@ -1405,6 +1533,47 @@ async function deleteCreditCard(id){
 }
 
 // updateDashMemberFilter is called inside applyData patch
+
+
+// ── PLAN DATA (editable annual plan) ──
+async function savePlanRow(memberId,type,key,monthKey_,value){
+  if(!db.planData[memberId])db.planData[memberId]={};
+  if(!db.planData[memberId][type])db.planData[memberId][type]={};
+  if(!db.planData[memberId][type][key])db.planData[memberId][type][key]={label:key,months:{}};
+  db.planData[memberId][type][key].months[monthKey_]=parseFloat(value)||0;
+  try{await gsPost({action:'savePlanData',memberId,planData:db.planData[memberId]});setSyncBadge('ok');}
+  catch(e){setSyncBadge('err');}
+}
+async function addPlanRow(memberId,type,labelInputId){
+  const label=document.getElementById(labelInputId).value.trim();
+  if(!label)return;
+  if(!db.planData[memberId])db.planData[memberId]={};
+  if(!db.planData[memberId][type])db.planData[memberId][type]={};
+  db.planData[memberId][type][label]={label,months:{}};
+  document.getElementById(labelInputId).value='';
+  try{await gsPost({action:'savePlanData',memberId,planData:db.planData[memberId]});setSyncBadge('ok');}
+  catch(e){setSyncBadge('err');}
+  renderMembersPage();
+}
+async function deletePlanRow(memberId,type,key){
+  if(!confirm('ลบแถวนี้?'))return;
+  if(db.planData[memberId]&&db.planData[memberId][type])delete db.planData[memberId][type][key];
+  try{await gsPost({action:'savePlanData',memberId,planData:db.planData[memberId]||{}});setSyncBadge('ok');}
+  catch(e){setSyncBadge('err');}
+  renderMembersPage();
+}
+
+// ── CC STATEMENTS ──
+async function saveCCStmt(ccId,monthKey_,field,value){
+  if(!db.ccStatements[ccId])db.ccStatements[ccId]={};
+  if(!db.ccStatements[ccId][monthKey_])db.ccStatements[ccId][monthKey_]={};
+  db.ccStatements[ccId][monthKey_][field]=parseFloat(value)||0;
+  try{await gsPost({action:'saveCCStatements',ccId,statements:db.ccStatements[ccId]});setSyncBadge('ok');}
+  catch(e){setSyncBadge('err');}
+}
+function ccStmtVal(ccId,mk,field){
+  return(db.ccStatements[ccId]&&db.ccStatements[ccId][mk]&&db.ccStatements[ccId][mk][field])||0;
+}
 
 </script>
 </body>
