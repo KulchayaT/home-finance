@@ -281,6 +281,11 @@ td.right{text-align:right}
 .cc-stmt-input:hover{border-color:var(--border)}
 .cc-total-row td{font-weight:700;color:var(--accent);border-top:2px solid var(--border) !important}
 .recur-total{display:flex;justify-content:flex-end;padding:10px 12px;border-top:2px solid var(--border);font-family:'Space Mono',monospace;font-size:13.0px;font-weight:700;color:var(--red)}
+
+/* Member plan charts grid */
+@media(max-width:900px){
+  div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important}
+}
 </style>
 </head>
 <body>
@@ -1322,8 +1327,18 @@ function renderMemberDetail(memberId){
       </div>
     </div>
     <div class="table-card" style="padding:16px;margin-bottom:14px">
-      <div class="chart-title">📈 รายรับ vs รายจ่าย+หนี้สิน (${year+543})</div>
+      <div class="chart-title">📈 รายรับ vs รายจ่าย+หนี้สิน จริง (${year+543})</div>
       <div class="chart-wrap tall"><canvas id="${canvasId}"></canvas></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="chart-card">
+        <div class="chart-title">📊 แผนรายรับ vs จริง (${year+543})</div>
+        <div class="chart-wrap tall"><canvas id="${canvasId}_planInc"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">📊 แผนรายจ่าย vs จริง (${year+543})</div>
+        <div class="chart-wrap tall"><canvas id="${canvasId}_planExp"></canvas></div>
+      </div>
     </div>
     <div class="table-card" style="margin-bottom:14px">
       <div class="table-header"><div class="table-title">📥 แผนรายรับ ปี ${year+543} <small style="color:var(--text3);font-size:10px">(กรอกแผน/ประมาณการ)</small></div></div>
@@ -1348,14 +1363,42 @@ function renderMemberDetail(memberId){
     </div>
   `;
   setTimeout(()=>{
+    const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
+    const mLabels=months.map(mn=>mn.toLocaleDateString('th-TH',{month:'short'}));
+
+    // Chart 1: Actual income vs expense+debt
     const iData=months.map(mn=>yTx.filter(t=>t.type==='income'&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
     const oeData=months.map(mn=>yTx.filter(t=>(t.type==='expense'||t.type==='debt')&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
-    const ctx=document.getElementById(canvasId);if(!ctx)return;
-    const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
-    new Chart(ctx,{type:'line',data:{labels:months.map(mn=>mn.toLocaleDateString('th-TH',{month:'short'})),datasets:[
-      {label:'รายรับ',data:iData,borderColor:m.color,backgroundColor:m.color+'22',fill:true,tension:.4,pointRadius:3},
-      {label:'รายจ่าย+หนี้',data:oeData,borderColor:'#ff5f6d',backgroundColor:'rgba(255,95,109,.07)',fill:true,tension:.4,pointRadius:3}
+    const ctx=document.getElementById(canvasId);
+    if(ctx) new Chart(ctx,{type:'line',data:{labels:mLabels,datasets:[
+      {label:'รายรับจริง',data:iData,borderColor:m.color,backgroundColor:m.color+'22',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:m.color},
+      {label:'รายจ่าย+หนี้จริง',data:oeData,borderColor:'#ff5f6d',backgroundColor:'rgba(255,95,109,.07)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#ff5f6d'}
     ]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},...cOpts2,animation:{duration:500}}});
+
+    // Chart 2: Plan income vs Actual income
+    const planInc=db.planData[mid]&&db.planData[mid].income?db.planData[mid].income:{};
+    const planIncData=months.map(mn=>{
+      const mk=monthKey(mn);
+      return Object.values(planInc).reduce((s,r)=>s+(r.months[mk]||0),0);
+    });
+    const ctx2=document.getElementById(canvasId+'_planInc');
+    if(ctx2) new Chart(ctx2,{type:'bar',data:{labels:mLabels,datasets:[
+      {label:'แผน',data:planIncData,backgroundColor:'rgba(91,138,240,0.3)',borderColor:'#5b8af0',borderWidth:2,borderRadius:4},
+      {label:'จริง',data:iData,backgroundColor:'rgba(61,220,151,0.3)',borderColor:'#3ddc97',borderWidth:2,borderRadius:4},
+    ]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}},animation:{duration:500}}});
+
+    // Chart 3: Plan expense vs Actual expense
+    const planExp=db.planData[mid]&&db.planData[mid].expense?db.planData[mid].expense:{};
+    const planExpData=months.map(mn=>{
+      const mk=monthKey(mn);
+      return Object.values(planExp).reduce((s,r)=>s+(r.months[mk]||0),0);
+    });
+    const actExpData=months.map(mn=>yTx.filter(t=>t.type==='expense'&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
+    const ctx3=document.getElementById(canvasId+'_planExp');
+    if(ctx3) new Chart(ctx3,{type:'bar',data:{labels:mLabels,datasets:[
+      {label:'แผน',data:planExpData,backgroundColor:'rgba(91,138,240,0.3)',borderColor:'#5b8af0',borderWidth:2,borderRadius:4},
+      {label:'จริง',data:actExpData,backgroundColor:'rgba(255,95,109,0.3)',borderColor:'#ff5f6d',borderWidth:2,borderRadius:4},
+    ]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}},animation:{duration:500}}});
   },50);
 }
 
