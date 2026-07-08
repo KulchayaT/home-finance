@@ -292,6 +292,14 @@ td.right{text-align:right}
 .status-badge.paid{background:var(--green-dim);color:var(--green);border-color:var(--green)}
 .status-badge.pending{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow)}
 .status-badge:hover{transform:scale(1.05)}
+
+/* Save button per table */
+.table-save-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border);gap:10px;flex-wrap:wrap}
+.unsaved-dot{width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.save-status{font-size:13px;color:var(--text3);display:flex;align-items:center;gap:6px}
+.save-status.dirty{color:var(--yellow)}
+.save-status.saved{color:var(--green)}
 </style>
 </head>
 <body>
@@ -1287,7 +1295,8 @@ function renderMemberDetail(memberId){
     const totals={};months.forEach(mn=>{const mk=monthKey(mn);totals[mk]=allRows.reduce((s,r)=>s+(r.months[mk]||0),0);});
     const grandTotal=Object.values(totals).reduce((s,v)=>s+v,0);
     const showStatus=(type==='expense');
-    const statusHeader=showStatus?'<th style="min-width:200px">สถานะ</th>':'';
+    const statusHeader=showStatus?'<th style="min-width:220px">สถานะ</th>':'';
+    const tableId='plan_'+mid+'_'+type;
     const rowsHTML=allRows.map(row=>{
       const rowTotal=Object.values(row.months).reduce((s,v)=>s+v,0);
       const statusCells=showStatus?`<td style="vertical-align:middle">
@@ -1305,10 +1314,10 @@ function renderMemberDetail(memberId){
         <td class="label-col" style="vertical-align:middle">
           <div style="display:flex;align-items:center;gap:6px">
             <span>${row.label}</span>
-            <button onclick="deletePlanRow(${mid},'${type}','${row.label}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:0">✕</button>
+            <button onclick="deletePlanRow(${mid},'${type}','${row.label}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:0" title="ลบแถว">✕</button>
           </div>
         </td>
-        ${months.map(mn=>{const mk=monthKey(mn);return`<td><input class="plan-input" type="number" value="${row.months[mk]||''}" placeholder="0" onchange="savePlanRow(${mid},'${type}','${row.label}','${mk}',this.value);showSaveIndicator(this)" onkeydown="planInputKeydown(event,${mid},'${type}','${row.label}','${mk}')"/></td>`;}).join('')}
+        ${months.map(mn=>{const mk=monthKey(mn);return`<td><input class="plan-input" type="number" value="${row.months[mk]||''}" placeholder="0" oninput="planInputChanged(${mid},'${type}','${row.label}','${mk}',this.value)"/></td>`;}).join('')}
         <td style="color:${color};font-weight:700;font-family:'Space Mono',monospace;font-size:13px;vertical-align:middle">฿${fmt(rowTotal)}</td>
         ${statusCells}
       </tr>`;
@@ -1323,7 +1332,7 @@ function renderMemberDetail(memberId){
           ${showStatus?'<td></td>':''}
         </tr>
       </tbody></table></div>
-      <div style="font-size:13px;color:var(--text3);padding:6px 12px">💡 กด Enter หรือ Tab เพื่อบันทึกตัวเลข · คลิก Badge เพื่อเปลี่ยนสถานะ</div>
+      ${savebar(tableId,'savePlanTable('+mid+',\''+type+'\')')}
       <div class="plan-row-add">
         <span style="font-size:13px;color:var(--text3)">+ เพิ่มแถว:</span>
         <input id="planAdd_${mid}_${type}" placeholder="ชื่อรายการ" style="flex:1;min-width:120px"/>
@@ -1496,7 +1505,7 @@ function renderCreditCard(){
     const rowsHTML=rows.map(r=>`
       <tr>
         <td class="left" style="color:${r.color};font-weight:600">${r.label}</td>
-        ${months.map(mn=>{const mk=monthKey(mn);const val=ccStmtVal(cid,mk,r.field);return`<td><input class="cc-stmt-input" type="number" value="${val||''}" placeholder="0" onchange="saveCCStmt(${cid},'${mk}','${r.field}',this.value);showSaveIndicator(this)" onkeydown="ccStmtKeydown(event,${cid},'${mk}','${r.field}')"/></td>`;}).join('')}
+        ${months.map(mn=>{const mk=monthKey(mn);const val=ccStmtVal(cid,mk,r.field);return`<td><input class="cc-stmt-input" type="number" value="${val||''}" placeholder="0" oninput="ccStmtChanged(${cid},'${mk}','${r.field}',this.value)"/></td>`;}).join('')}
       </tr>`).join('');
     // Net row (paid - balance)
     const netHTML=`<tr style="background:var(--surface3)">
@@ -1519,14 +1528,16 @@ function renderCreditCard(){
           <span style="font-size:11px;color:var(--text3)">ครบกำหนดวันที่:</span>
           <input type="number" value="${cc.dueDay||''}" placeholder="วันที่ 1-31" min="1" max="31"
             style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px;width:80px"
-            onchange="updateCCDueDay(${cid},this.value)"/>
+            oninput="ccDueDayChanged(${cid},this.value)"/>
           <span style="font-size:11px;color:var(--text3)">ของทุกเดือน</span>
+          ${savebar('ccDueDay_'+cid,'saveCCDueDay('+cid+')')}
         </div>
       </div>
       <div style="overflow-x:auto"><table class="cc-stmt-table">
         <thead><tr><th class="left" style="min-width:160px">รายการ</th>${mHeader}</tr></thead>
         <tbody>${rowsHTML}${netHTML}</tbody>
       </table></div>
+    ${savebar('ccStmt_'+cid,'saveCCStmtTable('+cid+')')}
     </div>`;
   }
 
@@ -1606,10 +1617,11 @@ async function deleteCreditCard(id){
 
 // ── PLAN DATA (editable annual plan) ──
 async function savePlanRow(memberId,type,key,monthKey_,value){
+  // Used by togglePlanStatus only - direct save for status changes
   if(!db.planData[memberId])db.planData[memberId]={};
   if(!db.planData[memberId][type])db.planData[memberId][type]={};
-  if(!db.planData[memberId][type][key])db.planData[memberId][type][key]={label:key,months:{}};
-  db.planData[memberId][type][key].months[monthKey_]=parseFloat(value)||0;
+  if(!db.planData[memberId][type][key])db.planData[memberId][type][key]={label:key,months:{},status:{}};
+  if(value!==undefined) db.planData[memberId][type][key].months[monthKey_]=parseFloat(value)||0;
   try{await gsPost({action:'savePlanData',memberId,planData:db.planData[memberId]});setSyncBadge('ok');}
   catch(e){setSyncBadge('err');}
 }
@@ -1688,6 +1700,138 @@ async function togglePlanStatus(memberId, type, key, monthKey_){
 function getPlanStatus(memberId, type, key, mk){
   try{ return db.planData[memberId][type][key].status[mk]||'pending'; }
   catch(e){ return 'pending'; }
+}
+
+
+// ════════════════════════════════════════════════
+// PENDING CHANGES SYSTEM
+// ════════════════════════════════════════════════
+const pending = {
+  plan: {},      // { memberId_type: { key, mk, value } }
+  ccStmt: {},    // { ccId_mk_field: value }
+  ccDueDay: {},  // { ccId: val }
+};
+
+function markDirty(tableId){
+  const bar=document.getElementById('savebar_'+tableId);
+  if(!bar)return;
+  bar.querySelector('.save-status').className='save-status dirty';
+  bar.querySelector('.save-status').innerHTML='<span class="unsaved-dot"></span> มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก';
+  bar.querySelector('.save-btn').disabled=false;
+  bar.querySelector('.save-btn').style.opacity='1';
+}
+function markSaved(tableId){
+  const bar=document.getElementById('savebar_'+tableId);
+  if(!bar)return;
+  bar.querySelector('.save-status').className='save-status saved';
+  bar.querySelector('.save-status').innerHTML='✅ บันทึกแล้ว';
+  bar.querySelector('.save-btn').disabled=true;
+  bar.querySelector('.save-btn').style.opacity='0.5';
+  setTimeout(()=>{
+    const s=bar&&bar.querySelector('.save-status');
+    if(s){s.className='save-status';s.innerHTML='ยังไม่มีการเปลี่ยนแปลง';}
+  },3000);
+}
+function markError(tableId){
+  const bar=document.getElementById('savebar_'+tableId);
+  if(!bar)return;
+  bar.querySelector('.save-status').className='save-status';
+  bar.querySelector('.save-status').style.color='var(--red)';
+  bar.querySelector('.save-status').innerHTML='❌ บันทึกล้มเหลว กรุณาลองใหม่';
+}
+
+// Save bar HTML generator
+function savebar(tableId, saveFn){
+  return `<div class="table-save-bar" id="savebar_${tableId}">
+    <div class="save-status">ยังไม่มีการเปลี่ยนแปลง</div>
+    <button class="btn btn-primary btn-sm save-btn" onclick="${saveFn}" disabled style="opacity:0.5">💾 บันทึก</button>
+  </div>`;
+}
+
+// ── PLAN DATA: collect → save on button ──
+function planInputChanged(memberId, type, key, mk, value){
+  const pkey=`${memberId}_${type}`;
+  if(!pending.plan[pkey]) pending.plan[pkey]=[];
+  // upsert
+  const existing=pending.plan[pkey].findIndex(p=>p.key===key&&p.mk===mk);
+  const entry={key,mk,value:parseFloat(value)||0};
+  if(existing>=0) pending.plan[pkey][existing]=entry;
+  else pending.plan[pkey].push(entry);
+  markDirty('plan_'+memberId+'_'+type);
+}
+
+async function savePlanTable(memberId, type){
+  const pkey=`${memberId}_${type}`;
+  const changes=pending.plan[pkey]||[];
+  if(!changes.length){markSaved('plan_'+memberId+'_'+type);return;}
+  // apply to db
+  if(!db.planData[memberId]) db.planData[memberId]={};
+  if(!db.planData[memberId][type]) db.planData[memberId][type]={};
+  changes.forEach(({key,mk,value})=>{
+    if(!db.planData[memberId][type][key]) db.planData[memberId][type][key]={label:key,months:{},status:{}};
+    db.planData[memberId][type][key].months[mk]=value;
+  });
+  setSyncBadge('syncing');
+  try{
+    await gsPost({action:'savePlanData',memberId,planData:db.planData[memberId]});
+    pending.plan[pkey]=[];
+    setSyncBadge('ok');
+    markSaved('plan_'+memberId+'_'+type);
+  }catch(e){
+    setSyncBadge('err');
+    markError('plan_'+memberId+'_'+type);
+  }
+}
+
+// ── CC STATEMENT: collect → save on button ──
+function ccStmtChanged(ccId, mk, field, value){
+  const k=`${ccId}_${mk}_${field}`;
+  pending.ccStmt[k]={ccId,mk,field,value:parseFloat(value)||0};
+  markDirty('ccStmt_'+ccId);
+}
+
+async function saveCCStmtTable(ccId){
+  const changes=Object.values(pending.ccStmt).filter(p=>p.ccId==ccId);
+  if(!db.ccStatements[ccId]) db.ccStatements[ccId]={};
+  changes.forEach(({mk,field,value})=>{
+    if(!db.ccStatements[ccId][mk]) db.ccStatements[ccId][mk]={};
+    db.ccStatements[ccId][mk][field]=value;
+  });
+  setSyncBadge('syncing');
+  try{
+    await gsPost({action:'saveCCStatements',ccId,statements:db.ccStatements[ccId]});
+    Object.keys(pending.ccStmt).filter(k=>k.startsWith(ccId+'_')).forEach(k=>delete pending.ccStmt[k]);
+    setSyncBadge('ok');
+    markSaved('ccStmt_'+ccId);
+    renderCreditCard(); // refresh to recalculate
+  }catch(e){
+    setSyncBadge('err');
+    markError('ccStmt_'+ccId);
+  }
+}
+
+// ── CC DueDay: collect → save on button ──
+function ccDueDayChanged(ccId, val){
+  pending.ccDueDay[ccId]=parseInt(val)||0;
+  markDirty('ccDueDay_'+ccId);
+}
+
+async function saveCCDueDay(ccId){
+  const val=pending.ccDueDay[ccId];
+  if(val===undefined)return;
+  const cc=db.creditCards.find(c=>c.id==ccId);
+  if(!cc)return;
+  cc.dueDay=val;
+  setSyncBadge('syncing');
+  try{
+    await gsPost({action:'saveCreditCard',creditCard:cc});
+    delete pending.ccDueDay[ccId];
+    setSyncBadge('ok');
+    markSaved('ccDueDay_'+ccId);
+  }catch(e){
+    setSyncBadge('err');
+    markError('ccDueDay_'+ccId);
+  }
 }
 
 </script>
