@@ -1300,29 +1300,28 @@ function renderMemberDetail(memberId){
     const totals={};months.forEach(mn=>{const mk=monthKey(mn);totals[mk]=allRows.reduce((s,r)=>s+(r.months[mk]||0),0);});
     const grandTotal=Object.values(totals).reduce((s,v)=>s+v,0);
     const showStatus=(type==='expense');
-    const statusHeader=showStatus?'<th style="min-width:200px">สถานะ</th>':'';
     const tableId='plan_'+mid+'_'+type;
 
     const rowsHTML=allRows.map(row=>{
       const rowTotal=Object.values(row.months).reduce((s,v)=>s+v,0);
-      let statusCells='';
-      if(showStatus){
-        const badges=months.map(mn=>{
-          const mk=monthKey(mn);
-          if(!(row.months[mk]>0))return'';
+      // Each month cell: input on top, status badge below (only if has value)
+      const monthCells=months.map(mn=>{
+        const mk=monthKey(mn);
+        const val=row.months[mk]||'';
+        let badgeHTML='';
+        if(showStatus&&val>0){
           const st=getPlanStatus(mid,type,row.label,mk);
-          const mLabel=mn.toLocaleDateString('th-TH',{month:'short'});
-          return `<span class="status-badge ${st}" onclick="togglePlanStatus(${mid},'${type}','${row.label}','${mk}')" style="margin:2px">${st==='paid'?'✅':'⏳'} ${mLabel}:${st==='paid'?'ชำระแล้ว':'รอชำระ'}</span>`;
-        }).join('');
-        statusCells=`<td style="vertical-align:top;padding:6px 10px"><div style="display:flex;flex-wrap:wrap;gap:3px;min-height:28px">${badges}</div></td>`;
-      }
-      const monthCells=months.map(mn=>{const mk=monthKey(mn);return`<td style="padding:4px 6px"><input class="plan-input" type="number" value="${row.months[mk]||''}" placeholder="0" oninput="planInputChanged(${mid},'${type}','${row.label}','${mk}',this.value)" style="width:80px"/></td>`;}).join('');
-      return`<tr style="vertical-align:middle"><td class="label-col" style="white-space:nowrap"><div style="display:flex;align-items:center;gap:5px"><span>${row.label}</span><button onclick="deletePlanRow(${mid},'${type}','${row.label}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;line-height:1;flex-shrink:0">✕</button></div></td>${monthCells}<td style="color:${color};font-weight:700;font-family:'Space Mono',monospace;font-size:13px;white-space:nowrap;padding:4px 8px">฿${fmt(rowTotal)}</td>${statusCells}</tr>`;
+          badgeHTML=`<div style="margin-top:4px"><span class="status-badge ${st}" onclick="togglePlanStatus(${mid},'${type}','${row.label}','${mk}')" style="font-size:11px;padding:2px 7px;display:inline-flex">${st==='paid'?'✅ จ่ายแล้ว':'⏳ รอจ่าย'}</span></div>`;
+        }
+        return`<td style="padding:4px 5px;vertical-align:top;min-width:90px"><input class="plan-input" type="number" value="${val}" placeholder="0" oninput="planInputChanged(${mid},'${type}','${row.label}','${mk}',this.value)" style="width:82px"/>${badgeHTML}</td>`;
+      }).join('');
+
+      return`<tr><td class="label-col" style="white-space:nowrap;vertical-align:top;padding-top:8px"><div style="display:flex;align-items:center;gap:5px"><span>${row.label}</span><button onclick="deletePlanRow(${mid},'${type}','${row.label}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px">✕</button></div></td>${monthCells}<td style="color:${color};font-weight:700;font-family:'Space Mono',monospace;font-size:13px;white-space:nowrap;vertical-align:top;padding-top:8px">฿${fmt(rowTotal)}</td></tr>`;
     }).join('');
 
-    const totalCells=months.map(mn=>`<td style="color:${color};font-weight:700;padding:4px 6px">฿${fmt(totals[monthKey(mn)])}</td>`).join('');
+    const totalCells=months.map(mn=>`<td style="color:${color};font-weight:700;padding:5px">฿${fmt(totals[monthKey(mn)])}</td>`).join('');
 
-    return`<div style="overflow-x:auto"><table class="annual-table" style="border-collapse:collapse"><thead><tr><th class="label-col">รายการ</th>${monthHeaders}<th>รวม</th>${statusHeader}</tr></thead><tbody>${rowsHTML}<tr style="background:var(--surface3)"><td class="label-col" style="font-weight:700;color:var(--accent)">รวม</td>${totalCells}<td style="color:${color};font-weight:700">฿${fmt(grandTotal)}</td>${showStatus?'<td></td>':''}</tr></tbody></table></div>${savebar(tableId,'savePlanTable('+mid+',\''+type+'\')')}<div class="plan-row-add"><span style="font-size:13px;color:var(--text3)">+ เพิ่มแถว:</span><input id="planAdd_${mid}_${type}" placeholder="ชื่อรายการ" style="flex:1;min-width:120px"/><button class="btn btn-primary btn-sm" onclick="addPlanRow(${mid},'${type}','planAdd_${mid}_${type}')">+ เพิ่ม</button></div>`;
+    return`<div style="overflow-x:auto"><table class="annual-table" style="border-collapse:collapse"><thead><tr><th class="label-col">รายการ</th>${monthHeaders}<th>รวม</th></tr></thead><tbody>${rowsHTML}<tr style="background:var(--surface3)"><td class="label-col" style="font-weight:700;color:var(--accent)">รวม</td>${totalCells}<td style="color:${color};font-weight:700">฿${fmt(grandTotal)}</td></tr></tbody></table></div>${savebar(tableId,'savePlanTable('+mid+',\''+type+'\')')}<div class="plan-row-add"><span style="font-size:13px;color:var(--text3)">+ เพิ่มแถว:</span><input id="planAdd_${mid}_${type}" placeholder="ชื่อรายการ" style="flex:1;min-width:120px"/><button class="btn btn-primary btn-sm" onclick="addPlanRow(${mid},'${type}','planAdd_${mid}_${type}')">+ เพิ่ม</button></div>`;
   }
 
   // Recurring with total
