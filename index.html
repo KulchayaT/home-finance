@@ -1304,23 +1304,20 @@ function renderMemberDetail(memberId){
 
     const rowsHTML=allRows.map(row=>{
       const rowTotal=Object.values(row.months).reduce((s,v)=>s+v,0);
-      // Each month cell: input on top, status badge below (only if has value)
       const monthCells=months.map(mn=>{
         const mk=monthKey(mn);
         const val=row.months[mk]||'';
-        let badgeHTML='';
+        let iconHTML='';
         if(showStatus&&val>0){
           const st=getPlanStatus(mid,type,row.label,mk);
-          badgeHTML=`<div style="margin-top:4px"><span class="status-badge ${st}" onclick="togglePlanStatus(${mid},'${type}','${row.label}','${mk}')" style="font-size:11px;padding:2px 7px;display:inline-flex">${st==='paid'?'✅ จ่ายแล้ว':'⏳ รอจ่าย'}</span></div>`;
+          iconHTML=`<span onclick="togglePlanStatus(${mid},'${type}','${row.label}','${mk}')" title="${st==='paid'?'ชำระแล้ว':'รอชำระ'}" style="cursor:pointer;font-size:16px;user-select:none;flex-shrink:0">${st==='paid'?'✅':'⏳'}</span>`;
         }
-        return`<td style="padding:4px 5px;vertical-align:top;min-width:90px"><input class="plan-input" type="number" value="${val}" placeholder="0" oninput="planInputChanged(${mid},'${type}','${row.label}','${mk}',this.value)" style="width:82px"/>${badgeHTML}</td>`;
+        return`<td style="padding:3px 4px;vertical-align:middle;white-space:nowrap"><div style="display:flex;align-items:center;gap:3px"><input class="plan-input" type="number" value="${val}" placeholder="0" oninput="planInputChanged(${mid},'${type}','${row.label}','${mk}',this.value)" style="width:110px;min-width:110px"/>${iconHTML}</div></td>`;
       }).join('');
-
-      return`<tr><td class="label-col" style="white-space:nowrap;vertical-align:top;padding-top:8px"><div style="display:flex;align-items:center;gap:5px"><span>${row.label}</span><button onclick="deletePlanRow(${mid},'${type}','${row.label}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px">✕</button></div></td>${monthCells}<td style="color:${color};font-weight:700;font-family:'Space Mono',monospace;font-size:13px;white-space:nowrap;vertical-align:top;padding-top:8px">฿${fmt(rowTotal)}</td></tr>`;
+      return`<tr><td class="label-col" style="white-space:nowrap;vertical-align:middle"><div style="display:flex;align-items:center;gap:5px"><span>${row.label}</span><button onclick="deletePlanRow(${mid},'${type}','${row.label}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px">✕</button></div></td>${monthCells}<td style="color:${color};font-weight:700;font-family:'Space Mono',monospace;font-size:13px;white-space:nowrap;vertical-align:middle;padding:3px 8px">฿${fmt(rowTotal)}</td></tr>`;
     }).join('');
 
-    const totalCells=months.map(mn=>`<td style="color:${color};font-weight:700;padding:5px">฿${fmt(totals[monthKey(mn)])}</td>`).join('');
-
+    const totalCells=months.map(mn=>`<td style="color:${color};font-weight:700;padding:4px 5px;white-space:nowrap">฿${fmt(totals[monthKey(mn)])}</td>`).join('');
     return`<div style="overflow-x:auto"><table class="annual-table" style="border-collapse:collapse"><thead><tr><th class="label-col">รายการ</th>${monthHeaders}<th>รวม</th></tr></thead><tbody>${rowsHTML}<tr style="background:var(--surface3)"><td class="label-col" style="font-weight:700;color:var(--accent)">รวม</td>${totalCells}<td style="color:${color};font-weight:700">฿${fmt(grandTotal)}</td></tr></tbody></table></div>${savebar(tableId,'savePlanTable('+mid+',\''+type+'\')')}<div class="plan-row-add"><span style="font-size:13px;color:var(--text3)">+ เพิ่มแถว:</span><input id="planAdd_${mid}_${type}" placeholder="ชื่อรายการ" style="flex:1;min-width:120px"/><button class="btn btn-primary btn-sm" onclick="addPlanRow(${mid},'${type}','planAdd_${mid}_${type}')">+ เพิ่ม</button></div>`;
   }
 
@@ -1348,9 +1345,15 @@ function renderMemberDetail(memberId){
         </div>
       </div>
     </div>
-    <div class="table-card" style="padding:16px;margin-bottom:14px">
-      <div class="chart-title">📈 รายรับ vs รายจ่าย+หนี้สิน จริง (${year+543})</div>
-      <div class="chart-wrap tall"><canvas id="${canvasId}"></canvas></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="chart-card">
+        <div class="chart-title">📈 รายรับ vs รายจ่าย+หนี้สิน จริง (${year+543})</div>
+        <div class="chart-wrap tall"><canvas id="${canvasId}"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">📋 แผนรายรับ vs แผนรายจ่าย (${year+543})</div>
+        <div class="chart-wrap tall"><canvas id="${canvasId}_plan"></canvas></div>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
       <div class="chart-card">
@@ -1386,41 +1389,47 @@ function renderMemberDetail(memberId){
   `;
   setTimeout(()=>{
     const cOpts2={plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}}};
+    const scaleOpts={x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}};
     const mLabels=months.map(mn=>mn.toLocaleDateString('th-TH',{month:'short'}));
 
-    // Chart 1: Actual income vs expense+debt
+    // ── Data from TRANSACTIONS (actual) ──
     const iData=months.map(mn=>yTx.filter(t=>t.type==='income'&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
     const oeData=months.map(mn=>yTx.filter(t=>(t.type==='expense'||t.type==='debt')&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
+    const actExpData=months.map(mn=>yTx.filter(t=>t.type==='expense'&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
+
+    // ── Data from PLAN (manual input) ──
+    const planIncRows=Object.values((db.planData[mid]&&db.planData[mid].income)||{});
+    const planExpRows=Object.values((db.planData[mid]&&db.planData[mid].expense)||{});
+    const planIncData=months.map(mn=>{const mk=monthKey(mn);return planIncRows.reduce((s,r)=>s+(r.months[mk]||0),0);});
+    const planExpData=months.map(mn=>{const mk=monthKey(mn);return planExpRows.reduce((s,r)=>s+(r.months[mk]||0),0);});
+
+    // Chart 1: Actual income vs actual expense+debt (from transactions)
     const ctx=document.getElementById(canvasId);
     if(ctx) new Chart(ctx,{type:'line',data:{labels:mLabels,datasets:[
       {label:'รายรับจริง',data:iData,borderColor:m.color,backgroundColor:m.color+'22',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:m.color},
       {label:'รายจ่าย+หนี้จริง',data:oeData,borderColor:'#ff5f6d',backgroundColor:'rgba(255,95,109,.07)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#ff5f6d'}
-    ]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},...cOpts2,animation:{duration:500}}});
+    ]},options:{scales:scaleOpts,...cOpts2,animation:{duration:500}}});
 
-    // Chart 2: Plan income vs Actual income
-    const planInc=db.planData[mid]&&db.planData[mid].income?db.planData[mid].income:{};
-    const planIncData=months.map(mn=>{
-      const mk=monthKey(mn);
-      return Object.values(planInc).reduce((s,r)=>s+(r.months[mk]||0),0);
-    });
+    // Chart 2: Plan income vs Plan expense (from planData)
+    const ctx_plan=document.getElementById(canvasId+'_plan');
+    if(ctx_plan) new Chart(ctx_plan,{type:'line',data:{labels:mLabels,datasets:[
+      {label:'แผนรายรับ',data:planIncData,borderColor:'#3ddc97',backgroundColor:'rgba(61,220,151,.1)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#3ddc97',borderDash:[]},
+      {label:'แผนรายจ่าย',data:planExpData,borderColor:'#f7c35f',backgroundColor:'rgba(247,195,95,.1)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#f7c35f',borderDash:[5,3]}
+    ]},options:{scales:scaleOpts,...cOpts2,animation:{duration:500}}});
+
+    // Chart 3: Plan income vs Actual income (bar)
     const ctx2=document.getElementById(canvasId+'_planInc');
     if(ctx2) new Chart(ctx2,{type:'bar',data:{labels:mLabels,datasets:[
-      {label:'แผน',data:planIncData,backgroundColor:'rgba(91,138,240,0.3)',borderColor:'#5b8af0',borderWidth:2,borderRadius:4},
+      {label:'แผนรายรับ',data:planIncData,backgroundColor:'rgba(91,138,240,0.3)',borderColor:'#5b8af0',borderWidth:2,borderRadius:4},
       {label:'จริง',data:iData,backgroundColor:'rgba(61,220,151,0.3)',borderColor:'#3ddc97',borderWidth:2,borderRadius:4},
-    ]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}},animation:{duration:500}}});
+    ]},options:{scales:scaleOpts,...cOpts2,animation:{duration:500}}});
 
-    // Chart 3: Plan expense vs Actual expense
-    const planExp=db.planData[mid]&&db.planData[mid].expense?db.planData[mid].expense:{};
-    const planExpData=months.map(mn=>{
-      const mk=monthKey(mn);
-      return Object.values(planExp).reduce((s,r)=>s+(r.months[mk]||0),0);
-    });
-    const actExpData=months.map(mn=>yTx.filter(t=>t.type==='expense'&&monthKey(t.date)===monthKey(mn)).reduce((s,t)=>s+t.amount,0));
+    // Chart 4: Plan expense vs Actual expense (bar)
     const ctx3=document.getElementById(canvasId+'_planExp');
     if(ctx3) new Chart(ctx3,{type:'bar',data:{labels:mLabels,datasets:[
-      {label:'แผน',data:planExpData,backgroundColor:'rgba(91,138,240,0.3)',borderColor:'#5b8af0',borderWidth:2,borderRadius:4},
+      {label:'แผนรายจ่าย',data:planExpData,backgroundColor:'rgba(91,138,240,0.3)',borderColor:'#5b8af0',borderWidth:2,borderRadius:4},
       {label:'จริง',data:actExpData,backgroundColor:'rgba(255,95,109,0.3)',borderColor:'#ff5f6d',borderWidth:2,borderRadius:4},
-    ]},options:{scales:{x:{ticks:{color:'#8892a8'},grid:{color:'#2e3548'}},y:{ticks:{color:'#8892a8',callback:v=>'฿'+fmt(v)},grid:{color:'#2e3548'}}},plugins:{legend:{labels:{color:'#8892a8',font:{family:'Noto Sans Thai',size:10},boxWidth:10,padding:10}}},animation:{duration:500}}});
+    ]},options:{scales:scaleOpts,...cOpts2,animation:{duration:500}}});
   },50);
 }
 
@@ -1479,50 +1488,17 @@ function renderCreditCard(){
     const cid=cc.id;
     const dueDay=cc.dueDay||0;
     const rows=[
-      {field:'balance',label:'ยอดคงเหลือทั้งหมด',color:'var(--red)'},
-      {field:'newSpend',label:'รายจ่ายเดือนนี้',color:'var(--orange)'},
-      {field:'interest',label:'ดอกเบี้ย',color:'var(--yellow)'},
-      {field:'minPay',label:'ขั้นต่ำ',color:'var(--text2)'},
-      {field:'paid',label:'จ่ายแล้ว',color:'var(--green)'},
+      {field:'totalDue',   label:'ยอดรวมที่ต้องชำระ',       color:'var(--red)'},
+      {field:'newSpend',   label:'ยอดใช้จ่ายเดือนนี้',       color:'var(--orange)'},
+      {field:'minPay',     label:'ยอดขั้นต่ำที่ต้องชำระ',   color:'var(--text2)'},
+      {field:'interest',   label:'ดอกเบี้ย',                  color:'var(--yellow)'},
+      {field:'remaining',  label:'วงเงินคงเหลือ',             color:'var(--green)'},
+      {field:'paid',       label:'ยอดที่ชำระ',                color:'var(--blue)'},
     ];
     const mHeader=months.map(mn=>`<th>${mn.toLocaleDateString('th-TH',{month:'short'})}</th>`).join('');
-    const rowsHTML=rows.map(r=>`
-      <tr>
-        <td class="left" style="color:${r.color};font-weight:600">${r.label}</td>
-        ${months.map(mn=>{const mk=monthKey(mn);const val=ccStmtVal(cid,mk,r.field);return`<td><input class="cc-stmt-input" type="number" value="${val||''}" placeholder="0" oninput="ccStmtChanged(${cid},'${mk}','${r.field}',this.value)"/></td>`;}).join('')}
-      </tr>`).join('');
-    // Net row (paid - balance)
-    const netHTML=`<tr style="background:var(--surface3)">
-      <td class="left" style="font-weight:700;color:var(--accent)">คงเหลือหลังจ่าย</td>
-      ${months.map(mn=>{const mk=monthKey(mn);const net=ccStmtVal(cid,mk,'balance')-ccStmtVal(cid,mk,'paid');return`<td style="font-family:'Space Mono',monospace;font-weight:700;color:${net>0?'var(--red)':'var(--green)'}">฿${fmt(net)}</td>`;}).join('')}
-    </tr>`;
-    return`<div class="cc-card" style="margin-bottom:16px">
-      <div class="cc-header">
-        <div>
-          <div class="cc-name">💳 ${cc.name}</div>
-          <div class="cc-bank">${cc.bank}${cc.limit?` · วงเงิน ฿${fmt(cc.limit)}`:''}${dueDay?` · ครบกำหนดวันที่ ${dueDay}`:''}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:10px;color:var(--text3)">ยอดปัจจุบัน</div>
-          <div style="font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--red)">฿${fmt(ccStmtVal(cid,monthKey(currentMonth),'balance'))}</div>
-        </div>
-      </div>
-      <div style="padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border)">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:11px;color:var(--text3)">ครบกำหนดวันที่:</span>
-          <input type="number" value="${cc.dueDay||''}" placeholder="วันที่ 1-31" min="1" max="31"
-            style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px;width:80px"
-            oninput="ccDueDayChanged(${cid},this.value)"/>
-          <span style="font-size:11px;color:var(--text3)">ของทุกเดือน</span>
-          ${savebar('ccDueDay_'+cid,'saveCCDueDay('+cid+')')}
-        </div>
-      </div>
-      <div style="overflow-x:auto"><table class="cc-stmt-table">
-        <thead><tr><th class="left" style="min-width:160px">รายการ</th>${mHeader}</tr></thead>
-        <tbody>${rowsHTML}${netHTML}</tbody>
-      </table></div>
-    ${savebar('ccStmt_'+cid,'saveCCStmtTable('+cid+')')}
-    </div>`;
+    const rowsHTML=rows.map(r=>`<tr><td class="left" style="color:${r.color};font-weight:600;white-space:nowrap">${r.label}</td>${months.map(mn=>{const mk=monthKey(mn);const val=ccStmtVal(cid,mk,r.field);return`<td><input class="cc-stmt-input" type="number" value="${val||''}" placeholder="0" oninput="ccStmtChanged(${cid},'${mk}','${r.field}',this.value)"/></td>`;}).join('')}</tr>`).join('');
+    const netHTML=`<tr style="background:var(--surface3)"><td class="left" style="font-weight:700;color:var(--accent)">คงเหลือหลังจ่าย</td>${months.map(mn=>{const mk=monthKey(mn);const net=(ccStmtVal(cid,mk,'totalDue')||0)-(ccStmtVal(cid,mk,'paid')||0);return`<td style="font-family:'Space Mono',monospace;font-weight:700;color:${net>0?'var(--red)':'var(--green)'}">฿${fmt(net)}</td>`;}).join('')}</tr>`;
+    return`<div class="cc-card" style="margin-bottom:16px"><div class="cc-header"><div><div class="cc-name">💳 ${cc.name}</div><div class="cc-bank">${cc.bank}${cc.limit?` · วงเงิน ฿${fmt(cc.limit)}`:''}${dueDay?` · ครบกำหนดวันที่ ${dueDay}`:''}</div></div><div style="text-align:right"><div style="font-size:13px;color:var(--text3)">ยอดรวมที่ต้องชำระ</div><div style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--red)">฿${fmt(ccStmtVal(cid,monthKey(currentMonth),'totalDue'))}</div></div></div><div style="padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:13px;color:var(--text3)">ครบกำหนดวันที่:</span><input type="number" value="${cc.dueDay||''}" placeholder="1-31" min="1" max="31" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:13px;width:70px" oninput="ccDueDayChanged(${cid},this.value)"/><span style="font-size:13px;color:var(--text3)">ของทุกเดือน</span>${savebar('ccDueDay_'+cid,'saveCCDueDay('+cid+')')}</div></div><div style="overflow-x:auto"><table class="cc-stmt-table"><thead><tr><th class="left" style="min-width:180px">รายการ</th>${mHeader}</tr></thead><tbody>${rowsHTML}${netHTML}</tbody></table></div>${savebar('ccStmt_'+cid,'saveCCStmtTable('+cid+')')}</div>`;
   }
 
   const stmtHTML=db.creditCards.map(stmtTable).join('');
